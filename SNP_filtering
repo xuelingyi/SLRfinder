@@ -41,6 +41,7 @@ write.table(position, paste0("position.", chr, ".list"), sep="\t",
 
 assign(paste0("out.", chr), out)
 }
+save(list=paste0("out.LG", 1:21), file="EL_pop35_out.RData")
 
 ######################## extract SNPs in the white list output above ########################
 for chr in {1..21}
