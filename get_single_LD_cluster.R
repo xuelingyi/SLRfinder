@@ -1,5 +1,7 @@
-# LD.data is the full name (including path) of the *.geno.ld file putput from vcftools 
-# the function works on each chr separately 
+## This function takes the edge list of LD estiamtes on SNP pairs and outputs a white list of SNPs that are in LD above 0.9 (not included, min_LD = 0.9) and in LD clusters larger than 10 SNPs (not included; min.cl.size=10). 
+
+# NOTE: LD.data is the full name (including path) of the *.geno.ld file putput from vcftools 
+# NOTE: the function works on each chr separately 
 
 get_single_LD_cluster <- function(LD.data, min_LD = 0.9, min.cl.size=10){
   
