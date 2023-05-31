@@ -1,0 +1,57 @@
+################### get biallelic SNPs from the GATK processed data set ######################## 
+# the following processing was by chromosome 
+# ind is the dataset name: e.g., ind=EL_pop35
+
+for chr in {1..21}
+do
+
+## get biallelic SNPs
+bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${chr}.vcf.gz
+
+## filtering
+bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
+| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 \
+--recode --recode-INFO-all -c \
+| bcftools view -Oz -o ${ind}_v7LG${chr}_a15m75.vcf.gz
+
+## estimate LD
+vcftools --gzvcf ${ind}_v7LG${chr}_a15m75.vcf.gz \
+--geno-r2 --ld-window-bp 100 \
+--out ${ind}_v7LG${chr}_a15m75
+
+done
+
+###################### in R ########################
+source("get_single_LD_cluster.R")
+
+for(i in c(1:21)){
+
+LD.data = paste0(ind, "_v7LG", i, "_a15m75.geno.ld")
+chr=paste0("LG", i)
+
+sink("mylog", append=T)
+out = get_single_LD_cluster(LD.data,  min_LD = 0.9, min.cl.size=10)
+print(paste0(out$chr, ": ", out$nSNPs))
+sink()
+
+position = as.data.frame(unlist(out$SNPs))
+position = cbind(rep(chr, sum(out$nSNPs)), position)
+write.table(position, paste0("position.", chr, ".list"), sep="\t",
+            quote = F, row.names = F)
+
+assign(paste0("out.", chr), out)
+}
+
+######################## extract SNPs in the white list output above ########################
+for chr in {1..21}
+do
+
+vcftools --gzvcf ${ind}_v7LG${chr}_a15m75.vcf.gz \
+--positions position.LG${chr}.list \
+--recode --recode-INFO-all \
+--out ${ind}_v7LG${chr}_a15m75_LD9cl10
+
+done
+
+
+
