@@ -43,13 +43,13 @@ assign(paste0("out.", chr), out)
 }
 save(list=paste0("out.LG", 1:21), file="EL_pop35_out.RData")
 
-######################## extract SNPs in the white list output above ########################
+###################### extract SNPs in the white list output above and save in .012 format ########################
 for chr in {1..21}
 do
 
 vcftools --gzvcf ${ind}_v7LG${chr}_a15m75.vcf.gz \
 --positions position.LG${chr}.list \
---recode --recode-INFO-all \
+--012 \
 --out ${ind}_v7LG${chr}_a15m75_LD9cl10
 
 done
