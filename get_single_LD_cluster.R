@@ -1,7 +1,7 @@
 # LD.data is the full name (including path) of the *.geno.ld file putput from vcftools 
 # the function works on each chr separately 
 
-get_single_LD_cluster <- function(LD.data, min_LD = 0.9, min.cl.size=8){
+get_single_LD_cluster <- function(LD.data, min_LD = 0.9, min.cl.size=10){
   
   geno.LD<-read.table(LD.data, header = T)
   names(geno.LD) = c("CHR",	"from",	"to",	"N_INDV",	"r2")
