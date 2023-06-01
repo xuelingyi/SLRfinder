@@ -5,21 +5,10 @@ Data were obtained from the published whole-genome sequencing of 887 wild indivi
 Datasets are generated based on the characterized sex-determining regions (SDRs) in Yi et al. (in prep). 
 
 Total 13 datasets: 
-1. ELpop27: 
-#length(unique(ELpop27$Population))
-# pop=27, n=558
-
-## WL (LG3)
-WLpop7 = sif[!(sif$Population %in% unclear) & sif$sex_region == "LG3", ]
-#length(unique(WLpop7$Population))
-# pop=7, n=146
-
-## 11 by pops
-for(pop in unclear) {
-  assign(gsub("-", "_", pop), sif[sif$Population == pop, ])
-}
-unclear = c("RUS-LEN", "JAP-BIW","USA-HLA", "CAN-FLO", "CAN-TEM",  #non_EU
-            "SCO-HAR", "GBR-GRO", "FRA-VEY", "SWE-NAV", #unknown
-            "FIN-KRK", #female-only
-            "POL-GDY" #2SDRs
-            )
+1. ELpop27: total 27 poplations sexed by the LG12 SDR, total 558 individuals
+2. WLpop7: total 7 populations sexed by the LG3 SDR, total 146 individuals
+3. 11 datasets each containing one population:
+the 5 non-European populations: RUS-LEN, JAP-BIW, USA-HLA, CAN-FLO, CAN-TEM
+the 4 EU populations of unknown SDR (based on Yi et al.): SCO-HAR, GBR-GRO, FRA-VEY, SWE-NAV
+one population identified with only females: FIN-KRK (the non-European population CAN-TEM also has females only)
+one population where both LG3 and LG12 SDRs coexist: POL-GDY
