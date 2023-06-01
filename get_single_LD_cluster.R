@@ -2,8 +2,8 @@
 
 # NOTE: LD.data is the full name (including path) of the *.geno.ld file putput from vcftools 
 # NOTE: the function works on each chr separately 
- library("igraph")
- library(data.table)
+library("igraph")
+library(data.table)
 
 get_single_LD_cluster <- function(LD.data, min_LD = 0.9, min.cl.size=10){
   
@@ -25,13 +25,12 @@ get_single_LD_cluster <- function(LD.data, min_LD = 0.9, min.cl.size=10){
   #length(d_g)
   
   cat("Summerizing data \n")
- 
   out <- rbindlist(lapply(d_g, function(g){
     nSNPs <- length(g)
     mean_LD <- mean(as.numeric(white.list[white.list$from %in% g & white.list$to %in% g,"r2"]))
     nE <- nrow(white.list[white.list$from %in% g & white.list$to %in% g, ])
     nE/nSNPs
-    data.table(chr, nSNPs, mean_LD,nE,c=nE/nSNPs,SNPs=list(g))
+    data.table(chr, nSNPs, mean_LD, nE, c=nE/nSNPs, SNPs=list(g))
   }))
   cat("Done \n")
   
