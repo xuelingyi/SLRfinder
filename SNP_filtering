@@ -1,6 +1,6 @@
 ################### get biallelic SNPs from the GATK processed data set ######################## 
 # the following processing was by chromosome 
-# ind is the dataset name: e.g., ind=EL_pop35
+# ind is the dataset name: e.g., ind=
 
 for chr in {1..21}
 do
