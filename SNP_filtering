@@ -16,7 +16,7 @@ bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
 
 ## estimate LD
 vcftools --gzvcf ${ind}_v7LG${chr}_a15m75.vcf.gz \
---geno-r2 --ld-window-bp 100 \
+--geno-r2 --ld-window 100 \
 --out ${ind}_v7LG${chr}_a15m75
 
 done
