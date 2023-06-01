@@ -1,58 +1,68 @@
-################### get biallelic SNPs from the GATK processed data set ######################## 
-# the following processing was by chromosome 
-# ind is the dataset name: e.g., ind=
-
+## get biallelic SNPs (by chromosome) from the GATK-processed data
 for chr in {1..21}
 do
-
-## get biallelic SNPs
 bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${chr}.vcf.gz
-
-## filtering
-bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
-| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 \
---recode --recode-INFO-all -c \
-| bcftools view -Oz -o ${ind}_v7LG${chr}_a15m75.vcf.gz
-
-## estimate LD
-vcftools --gzvcf ${ind}_v7LG${chr}_a15m75.vcf.gz \
---geno-r2 --ld-window 100 \
---out ${ind}_v7LG${chr}_a15m75
-
 done
 
+################### filtering and prepare datasets ######################## 
+# run in parallel by chromosome
+# each dataset has its own folder named by the dataset, and four subfolders named as a15m75, snp100, whitelist, and LD9cl10
+
+ind=ELpop27
+## the dataset name. full list: ELpop27, WLpop7, CAN_FLO, CAN_TEM, JAP_BIW, RUS_LEN, USA_HLA, FRA_VEY, GBR_GRO, SCO_HAR, SWE_NAV, FIN_KRK, POL_GDY, 
+
+chr=${SLURM_ARRAY_TASK_ID}
+cd ${ind}
+
+## filtering
+bcftools view -S ../datasets/${ind}.list ../../v7/v7.LG${chr}.vcf.gz \
+| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all -c \
+| bcftools view -Oz -o ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz
+
+## estimate LD in windows of 100 SNPs
+vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
+--geno-r2 --ld-window 100 \
+--out ./snp100/v7LG${chr}_a15m75
+
 ###################### in R ########################
-source("get_single_LD_cluster.R")
+## run within the dataset folder
+
+source("../get_single_LD_cluster.R")
 
 for(i in c(1:21)){
 
-LD.data = paste0(ind, "_v7LG", i, "_a15m75.geno.ld")
+LD.data = paste0("./snp100/v7LG", i, "_a15m75.geno.ld")
 chr=paste0("LG", i)
 
-sink("mylog", append=T)
+sink("./whitelist/mylog", append=T)
 out = get_single_LD_cluster(LD.data,  min_LD = 0.9, min.cl.size=10)
 print(paste0(out$chr, ": ", out$nSNPs))
 sink()
 
 position = as.data.frame(unlist(out$SNPs))
 position = cbind(rep(chr, sum(out$nSNPs)), position)
-write.table(position, paste0("position.", chr, ".list"), sep="\t",
+write.table(position, paste0("./whitelist/position.", chr, ".list"), sep="\t",
             quote = F, row.names = F)
 
 assign(paste0("out.", chr), out)
 }
-save(list=paste0("out.LG", 1:21), file="EL_pop35_out.RData")
+save(list=paste0("out.LG", 1:21), file="./whitelist/out.RData")
 
-###################### extract SNPs in the white list output above and save in .012 format ########################
-for chr in {1..21}
-do
+###################### extract SNPs in the whitelist output above and save in .012 format ########################
+## run in parallel by chromosome
+## run within the dataset folder
 
-vcftools --gzvcf ${ind}_v7LG${chr}_a15m75.vcf.gz \
---positions position.LG${chr}.list \
+ind=ELpop27
+## the dataset name. full list: ELpop27, WLpop7, CAN_FLO, CAN_TEM, JAP_BIW, RUS_LEN, USA_HLA, FRA_VEY, GBR_GRO, SCO_HAR, SWE_NAV, FIN_KRK, POL_GDY, 
+
+chr=${SLURM_ARRAY_TASK_ID}
+cd ${ind}
+
+vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
+--positions ./whitelist/position.LG${chr}.list \
 --012 \
---out ${ind}_v7LG${chr}_a15m75_LD9cl10
+--out LD9cl10/${ind}_v7LG${chr}_a15m75_LD9cl10
 
-done
 
 
 
