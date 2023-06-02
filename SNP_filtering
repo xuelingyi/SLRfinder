@@ -9,7 +9,10 @@ done
 # each dataset has its own folder named by the dataset, and four subfolders named as a15m75, snp100, whitelist, and LD9cl10
 
 ind=ELpop27
-## the dataset name. full list: ELpop27, WLpop7, CAN_FLO, CAN_TEM, JAP_BIW, RUS_LEN, USA_HLA, FRA_VEY, GBR_GRO, SCO_HAR, SWE_NAV, FIN_KRK, POL_GDY, 
+## the dataset name. 
+## ind=WLpop7
+# for ind in CAN_FLO CAN_TEM JAP_BIW RUS_LEN USA_HLA FRA_VEY GBR_GRO SCO_HAR SWE_NAV FIN_KRK POL_GDY 
+# do
 
 chr=${SLURM_ARRAY_TASK_ID}
 cd ${ind}
@@ -23,6 +26,9 @@ bcftools view -S ../datasets/${ind}.list ../../v7/v7.LG${chr}.vcf.gz \
 vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
 --geno-r2 --ld-window 100 \
 --out ./snp100/v7LG${chr}_a15m75
+
+# cd ../
+# done
 
 ###################### in R ########################
 ## run within the dataset folder
@@ -53,7 +59,6 @@ save(list=paste0("out.LG", 1:21), file="./whitelist/out.RData")
 ## run within the dataset folder
 
 ind=ELpop27
-## the dataset name. full list: ELpop27, WLpop7, CAN_FLO, CAN_TEM, JAP_BIW, RUS_LEN, USA_HLA, FRA_VEY, GBR_GRO, SCO_HAR, SWE_NAV, FIN_KRK, POL_GDY, 
 
 chr=${SLURM_ARRAY_TASK_ID}
 cd ${ind}
