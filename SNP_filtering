@@ -34,6 +34,7 @@ vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
 ## run within the dataset folder
 
 source("../get_single_LD_cluster.R")
+data_cls <- NULL
 
 for(i in c(1:21)){
 
@@ -50,9 +51,10 @@ position = cbind(rep(chr, sum(out$nSNPs)), position)
 write.table(position, paste0("./whitelist/position.", chr, ".list"), sep="\t",
             quote = F, row.names = F)
 
-assign(paste0("out.", chr), out)
+data_cls <- rbind(data_cls, out)
 }
-save(list=paste0("out.LG", 1:21), file="./whitelist/out.RData")
+saveRDS(data_cls, file="./whitelist/data_cls.rds")
+
 
 ###################### extract SNPs in the whitelist output above and save in .012 format ########################
 ## run in parallel by chromosome
