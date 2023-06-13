@@ -4,9 +4,9 @@ do
 bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${chr}.vcf.gz
 done
 
-################### filtering and prepare datasets ######################## 
+###################### filtering and prepare datasets ######################## 
 # run in parallel by chromosome
-# each dataset has its own folder named by the dataset, and four subfolders named as a15m75, snp100, whitelist, and LD9cl10
+# each dataset has its own folder named by the dataset and at least three subfolders named as a15m75, GenoLD.snp100, and LD9cl10 (and more if trying different parameters: LD9cl20, LD85cl10, LD85cl20, LD8cl10, LD8cl20)
 
 ind=ELpop27
 ## the dataset name. 
@@ -25,51 +25,72 @@ bcftools view -S ../datasets/${ind}.list ../../v7/v7.LG${chr}.vcf.gz \
 ## estimate LD in windows of 100 SNPs
 vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
 --geno-r2 --ld-window 100 \
---out ./snp100/v7LG${chr}_a15m75
+--out ./GenoLD.snp100/v7LG${chr}_a15m75
 
 # cd ../
 # done
 
 ###################### in R ########################
 ## run within the dataset folder
+## the dataset folder should also include the sample information file (e.g., WLpop7.csv) which should include the columns "SampleID" and "Population" (and "sex" etc. if availalbe)
 
 source("../get_single_LD_cluster.R")
-data_cls <- NULL
 
-for(i in c(1:21)){
+## test different parameter combinations 
+for (min_LD in c(0.8, 0.85, 0.9)) {
+  for (min.cl.size in c(10, 20)) {
+    
+    ## create the paramter data folder and change directory inside
+    system(paste0("mkdir ", "LD", min_LD*10, "cl", min.cl.size))
+    setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
+    system(paste0("mkdir ", "whitelist"))
+    
+    ## generate data using the current parameters
+    data_cls <- NULL
+    for(i in c(1:21)){
+      LD.data = paste0("../GenoLD.snp100/v7LG", i, "_a15m75.geno.ld")
+      chr=paste0("LG", i)
 
-LD.data = paste0("./snp100/v7LG", i, "_a15m75.geno.ld")
-chr=paste0("LG", i)
+      sink("./whitelist/mylog", append=T)
+      out = get_single_LD_cluster(LD.data, min_LD = min_LD, min.cl.size=min.cl.size)
+      print(paste0(out$chr, ": ", out$nSNPs))
+      sink()
 
-sink("./whitelist/mylog", append=T)
-out = get_single_LD_cluster(LD.data,  min_LD = 0.9, min.cl.size=10)
-print(paste0(out$chr, ": ", out$nSNPs))
-sink()
+      position = as.data.frame(unlist(out$SNPs))
+      position = cbind(rep(chr, sum(out$nSNPs)), position)
+      write.table(position, paste0("./whitelist/position.", chr, ".list"), sep="\t", quote = F, row.names = F)
 
-position = as.data.frame(unlist(out$SNPs))
-position = cbind(rep(chr, sum(out$nSNPs)), position)
-write.table(position, paste0("./whitelist/position.", chr, ".list"), sep="\t",
-            quote = F, row.names = F)
-
-data_cls <- rbind(data_cls, out)
+      data_cls <- rbind(data_cls, out)
+    }
+    
+    data_cls$SNPs = apply(data_cls, 1, function(cl){ paste0(cl$chr, "_", cl$SNPs)})
+    saveRDS(data_cls, file="data_cls.rds")
+    setwd("../")
+  }
 }
-saveRDS(data_cls, file="./whitelist/data_cls.rds")
-
 
 ###################### extract SNPs in the whitelist output above and save in .012 format ########################
 ## run in parallel by chromosome
 ## run within the dataset folder
 
 ind=ELpop27
-
-chr=${SLURM_ARRAY_TASK_ID}
 cd ${ind}
 
-vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
+for LD in 8 8.5 9
+do
+for cl in 10 20 
+do
+
+cd ./LD${LD}cl${cl}/
+chr=${SLURM_ARRAY_TASK_ID}
+
+vcftools --gzvcf ../a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
 --positions ./whitelist/position.LG${chr}.list \
 --012 \
---out LD9cl10/${ind}_v7LG${chr}_a15m75_LD9cl10
+--out ./${ind}_v7LG${chr}_a15m75_LD${LD}cl${cl}
 
+cd ../
 
-
+done
+done
 
