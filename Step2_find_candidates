@@ -15,7 +15,7 @@ for (min_LD in c(8, 8.5, 9)) {
     # the path to the parameter folder
     path = paste0("LD", min_LD, "cl", min.cl.size)
     # load data
-    readRDS(data_cls, file=paste0(path, "data_cls.rds"))
+    readRDS(data_cls, file=paste0(path, "/whitelist/data_cls.rds"))
     pos_files <- paste0(mydata, "_v7LG", 1:21, "_a15m75_LD", min_LD, "cl", min.cl.size, ".012.pos")
     GT_files <- paste0(mydata, "_v7LG", 1:21, "_a15m75_LD", min_LD, "cl", min.cl.size, ".012")
     
