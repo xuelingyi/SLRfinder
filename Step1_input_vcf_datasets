@@ -32,8 +32,6 @@ vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
 
 ###################### in R ########################
 ## run within the dataset folder
-## the dataset folder should also include the sample information file (e.g., WLpop7.csv) which should include the columns "SampleID" and "Population" (and "sex" etc. if availalbe)
-
 source("../get_single_LD_cluster.R")
 
 ## test different parameter combinations 
