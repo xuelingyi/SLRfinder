@@ -1,3 +1,4 @@
+library(data.table)
 ### run this R script within the LDcl folder within each dataset
     # load data
     data_cls <- readRDS(file=paste0("data_cls.rds"))
