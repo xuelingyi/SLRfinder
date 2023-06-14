@@ -1,15 +1,16 @@
-### get the top candidates for each dataset (and each parameter combiantion)
-## each dataset has its own folder named by the dataset and should contain subfolders named as a15m75, GenoLD.snp100, LD9cl10 (and more if trying different parameters: LD9cl20, LD85cl10, LD85cl20, LD8cl10, LD8cl20)
-## the dataset folder should also include the sample information file named by the dataset (e.g., WLpop7.csv). The sif should include the columns "SampleID" and "Population" (and "sex" etc. if availalbe)
+### get the top candidates for each parameter combiantion of each dataset
+source("get_candidate_region.R")
+source("Pval.R")
 
-source("../get_candidate_regions.R")
-source("../Pval.R")
+mydata="BEL_MAL"
 
-mydata="WLpop7"
+
+
+setwd(mydata)
 cores=1
 
 ## run inside each dataset folder
-#setwd(mydata)
+#
 
 for (min_LD in c(8, 8.5, 9)) {
   for (min.cl.size in c(10, 20)) {
