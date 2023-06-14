@@ -1,36 +1,44 @@
-## get biallelic SNPs (by chromosome) from the GATK-processed data
-for chr in {1..21}
-do
-bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${chr}.vcf.gz
-done
-
-###################### filtering and prepare datasets ######################## 
-# run in parallel by chromosome
-# each dataset has its own folder named by the dataset and at least three subfolders named as a15m75, GenoLD.snp100, and LD9cl10 (and more if trying different parameters: LD9cl20, LD85cl10, LD85cl20, LD8cl10, LD8cl20)
-
-ind=ELpop27
-## the dataset name. 
-## ind=WLpop7
-# for ind in CAN_FLO CAN_TEM JAP_BIW RUS_LEN USA_HLA FRA_VEY GBR_GRO SCO_HAR SWE_NAV FIN_KRK POL_GDY 
-# do
-
-chr=${SLURM_ARRAY_TASK_ID}
+##### below is to call R scripts in the unix environemnt 
+##### this script can also be modified to run vcftools in R env #########
+ind=BEL_MAL
 cd ${ind}
 
-## filtering
-bcftools view -S ../datasets/${ind}.list ../../v7/v7.LG${chr}.vcf.gz \
-| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all -c \
-| bcftools view -Oz -o ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz
+### run within the dataset folder
 
-## estimate LD in windows of 100 SNPs
-vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
---geno-r2 --ld-window 100 \
---out ./GenoLD.snp100/v7LG${chr}_a15m75
+## make the sif file easy to read by step2_cluster2.R
+cp ${ind}.csv sif.csv
 
-# cd ../
-# done
+module load r-env-singularity
+# modify parameters in the Rscript if needed
+srun singularity_wrapper exec Rscript --no-save ../step1_cluster1.R
 
-###################### in R ########################
+ls | grep cl > subfolders
+
+module load vcftools
+
+while read subfolder
+do
+cd subfolder
+mkdir file012
+
+for chr in {1..21}
+do
+vcftools --gzvcf ../a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
+--positions ./whitelist/position.LG${chr}.list \
+--012 \
+--out ./file012/${ind}_v7LG${chr}_a15m75_LD${LD}cl${cl}
+done
+
+# modify dataname in the Rscript if needed (now use the universal name sif.csv)
+srun singularity_wrapper exec Rscript --no-save ../../step1_cluster2.R
+
+cd ../
+done < subfolders
+
+rm subfolders
+rm sif.csv
+
+
 ## run within the dataset folder
 source("../get_single_LD_cluster.R")
 
