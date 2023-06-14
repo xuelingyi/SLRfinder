@@ -9,7 +9,7 @@ mydata="WLpop7"
 cores=1
 
 ## run inside each dataset folder
-setwd(mydata)
+#setwd(mydata)
 
 for (min_LD in c(8, 8.5, 9)) {
   for (min.cl.size in c(10, 20)) {
