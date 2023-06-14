@@ -9,7 +9,7 @@ done
 # each dataset has its own folder named by the dataset
 # the dataset folder should contain the individual list (named as dataset.list)
 
-ind=WLpop7 
+ind=BEL_MAL
 ## the dataset name
 
 chr=${SLURM_ARRAY_TASK_ID}
