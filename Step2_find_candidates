@@ -2,9 +2,11 @@
 ## each dataset has its own folder named by the dataset and should contain subfolders named as a15m75, GenoLD.snp100, LD9cl10 (and more if trying different parameters: LD9cl20, LD85cl10, LD85cl20, LD8cl10, LD8cl20)
 ## the dataset folder should also include the sample information file named by the dataset (e.g., WLpop7.csv). The sif should include the columns "SampleID" and "Population" (and "sex" etc. if availalbe)
 
-source("get_candidate_regions.R")
+source("../get_candidate_regions.R")
+source("../Pval.R")
 
 mydata="WLpop7"
+cores=1
 
 ## run inside each dataset folder
 setwd(mydata)
@@ -39,14 +41,14 @@ for (min_LD in c(8, 8.5, 9)) {
     ## the ranks used for defining candidate regions
     ranks = c("Dext_max_rank","r2_rank","nSNPs_rank","chi2_rank")
     
-    cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=10, alpha=0.05)
+    cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=cores, alpha=0.05)
     cand_regions$candidates
     cand_regions$qq_plot
     cand_regions$plot
     
     saveRDS(cand_regions, paste0("cand_regions.rds"))
 
-    pairs(cand_regions_WL_pop7$data[,.(r2,Dext_max,nSNPs,chi2)])
+    pairs(cand_regions$data[,.(r2,Dext_max,nSNPs,chi2)])
     
     setwd("../")
   }
