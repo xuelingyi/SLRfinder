@@ -85,7 +85,7 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
   obs <- data_out[,rank]
 
   null <- unlist(exp)
-  p <- unlist(mclapply(obs,function(x) (sum(null<x)+1)/(length(null)+1),mc.cores = cores))
+  p <- Pval(unlist(exp),obs,alternative = "less")
 
   ## check and corret for p-value inflation
   cat("Checking and correcting p-value inflation \n\n")
