@@ -10,10 +10,10 @@ library(data.table)
 
     ## get and check pop info
     indv <- fread(indv_files[1], header=F)
-    pop_info <- fread("sif.csv")
+    pop_info <- fread("../sif.csv")
     if(all(indv$V1 == pop_info$SampleID)) {
-        pop <- pop_info$Population
-        ind <- pop_info$SampleID
+      pop <- pop_info$Population
+      ind <- pop_info$SampleID
     }else{
     print("indv and pop do not match!")}
 
