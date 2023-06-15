@@ -11,7 +11,9 @@ library(data.table)
     ## get and check pop info
     indv <- fread(indv_files[1], header=F)
     pop_info <- fread("sif.csv")
-    if(all(indv$V1 == pop_info$SampleID)) {pop <- pop_info$Population
+    if(all(indv$V1 == pop_info$SampleID)) {
+        pop <- pop_info$Population
+        ind <- pop_info$SampleID
     }else{
     print("indv and pop do not match!")}
 
@@ -23,4 +25,4 @@ library(data.table)
     }))
     GT <- do.call(cbind, lapply(1:length(pos_files),function(i){ as.matrix(fread(GT_files[i])[,-1]) }))
     GT[GT==-1] <- NA
-    save(data_cls, GT, map, pop, file=paste0("LD", min_LD, "cl", min.cl.size, ".RData"))
+    save(data_cls, GT, map, ind, pop, file=paste0("LD", min_LD, "cl", min.cl.size, ".RData"))
