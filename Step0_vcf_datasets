@@ -5,17 +5,15 @@ bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${c
 done
 
 ###################### filtering and prepare datasets ######################## 
-# run in parallel by chromosome
-# each dataset has its own folder named by the dataset
+# run by chromosome
+# create a directory for each dataset using the dataset name, and two subfolders named as a15m75 and GenoLD.snp100
 # the dataset folder should contain the individual list (named as dataset.list)
 
-ind=BEL_MAL
-## the dataset name
+ind=west_pop7
+## the dataset's name
 
 chr=${SLURM_ARRAY_TASK_ID}
 cd ${ind}
-mkdir a15m75
-mkdir GenoLD.snp100
 
 ## filtering: change paths if needed
 bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
@@ -27,4 +25,3 @@ vcftools --gzvcf ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
 --geno-r2 --ld-window 100 \
 --out ./GenoLD.snp100/v7LG${chr}_a15m75
 
-cd ../
