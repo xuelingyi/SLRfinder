@@ -9,7 +9,7 @@ done
 # create a directory for each dataset using the dataset name, and two subfolders named as a15m75 and GenoLD.snp100
 # the dataset folder should contain the individual list (named as dataset.list)
 
-ind=west_pop7
+ind=west_pop8
 ## the dataset's name
 
 chr=${SLURM_ARRAY_TASK_ID}
