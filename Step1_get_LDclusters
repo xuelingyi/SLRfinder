@@ -6,7 +6,7 @@ module load r-env-singularity
 srun singularity_wrapper exec Rscript --no-save ../1_getLDcluster.R
 
 ************************* 1_getLDcluster.R **********************************
-library("igraph")
+library(igraph)
 #https://cloud.r-project.org/web/packages/igraph/igraph.pdf
 library(data.table)
 
@@ -35,7 +35,7 @@ get_single_LD_cluster <- function(LD.data, min_LD = 0.9, min.cl.size = 10){
     nSNPs <- length(dg)
     #mean LD among SNPs in the LD cluster (edge weight)
     mean_LD <- mean(as.numeric(white.list[white.list$from %in% dg & white.list$to %in% dg, "r2"]))
-    #number of SNP pairs having high LD in this cluseter (retained edges)
+    #number of SNP pairs having high LD in this cluster (retained edges)
     nE <- nrow(white.list[white.list$from %in% dg & white.list$to %in% dg, ])
     #retained number of edges/nodes as an approximate of clustering coefficiency (higher c means tighter clustering)
     c <- nE/nSNPs
@@ -62,7 +62,7 @@ for (min_LD in c(0.8, 0.85, 0.9)) {
       chr=paste0("LG", i)
 
       sink("./whitelist/mylog", append=T)
-      out = get_single_LD_cluster(LD.data, min_LD = min_LD, min.cl.size=min.cl.size)
+      out = get_single_LD_cluster(LD.data, min_LD = min_LD, min.cl.size = min.cl.size)
       print(paste0(out$chr, ": ", out$nSNPs))
       sink()
 
