@@ -60,11 +60,7 @@ for (min_LD in c(0.8, 0.85, 0.9)) {
     for(i in c(1:21)){
       LD.data = paste0("../GenoLD.snp100/v7LG", i, "_a15m75.geno.ld")
       chr=paste0("LG", i)
-
-      sink("./whitelist/mylog", append=T)
       out = get_single_LD_cluster(LD.data, min_LD = min_LD, min.cl.size = min.cl.size)
-      print(paste0(out$chr, ": ", out$nSNPs))
-      sink()
 
       position = as.data.frame(unlist(out$SNPs))
       position = cbind(rep(chr, sum(out$nSNPs)), position)
