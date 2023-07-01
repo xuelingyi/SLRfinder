@@ -1,7 +1,4 @@
-#ind=west_pop8
-#cd ${ind}
 ### NOTE: run this script in each datafolder
-
 module load r-env-singularity
 srun singularity_wrapper exec Rscript --no-save ../1_getLDcluster.R
 
@@ -20,7 +17,7 @@ get_single_LD_cluster <- function(LD.data, min_LD = 0.9, min.cl.size = 10){
   names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
   chr = unique(geno.LD$CHR)
   #Remove edges lower than min_LD
-  white.list <- subset(geno.LD, as.numeric(r2) >= min_LD)
+  white.list <- subset(geno.LD, as.numeric(r2) > min_LD)
 
   #Parse the edge data to create a graph object
   g <- graph_from_edgelist(apply(white.list[,c("from", "to")], 2, function(o) as.character(o)), directed = FALSE)
@@ -35,13 +32,12 @@ get_single_LD_cluster <- function(LD.data, min_LD = 0.9, min.cl.size = 10){
     nSNPs <- length(dg)
     #mean LD among SNPs in the LD cluster (edge weight)
     mean_LD <- mean(as.numeric(white.list[white.list$from %in% dg & white.list$to %in% dg, "r2"]))
-    #number of SNP pairs having high LD in this cluster (retained edges)
+    #number of SNP pairs having high LD in this cluseter (retained edges)
     nE <- nrow(white.list[white.list$from %in% dg & white.list$to %in% dg, ])
     #retained number of edges/nodes as an approximate of clustering coefficiency (higher c means tighter clustering)
     c <- nE/nSNPs
     data.table(chr, nSNPs, mean_LD, nE, c, SNPs=list(dg))
   }))
-
   return(out)
 }
 
@@ -60,12 +56,13 @@ for (min_LD in c(0.8, 0.85, 0.9)) {
     for(i in c(1:21)){
       LD.data = paste0("../GenoLD.snp100/v7LG", i, "_a15m75.geno.ld")
       chr=paste0("LG", i)
-      out = get_single_LD_cluster(LD.data, min_LD = min_LD, min.cl.size = min.cl.size)
-
+      #sink("./whitelist/mylog", append=T)
+      out = get_single_LD_cluster(LD.data, min_LD = min_LD, min.cl.size=min.cl.size)
+      #print(paste0(out$chr, ": ", out$nSNPs))
+      #sink()
       position = as.data.frame(unlist(out$SNPs))
       position = cbind(rep(chr, sum(out$nSNPs)), position)
       write.table(position, paste0("./whitelist/position.", chr, ".list"), sep="\t", quote = F, row.names = F)
-
       data_cls <- rbind(data_cls, out)
     }
 
@@ -75,7 +72,7 @@ for (min_LD in c(0.8, 0.85, 0.9)) {
   }
 }
 ********************************************************************
-
+## run VCFTools in unix (can also do this in R system if preferred)
 ## extract SNPs for each parameter test and each chr
 ls | grep cl > subfolders
 module load vcftools
