@@ -84,10 +84,10 @@ mkdir file012
 
 for chr in {1..21}
 do
-vcftools --gzvcf ../a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz \
+vcftools --gzvcf ../a15m75/*_v7LG${chr}_a15m75.vcf.gz \
 --positions ./whitelist/position.LG${chr}.list \
 --012 \
---out ./file012/${ind}_v7LG${chr}_a15m75_LD${LD}cl${cl}
+--out ./file012/v7LG${chr}_a15m75_LD${LD}cl${cl}
 done
 
 cd ../
