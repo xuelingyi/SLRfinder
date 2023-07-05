@@ -93,4 +93,3 @@ done
 cd ../
 done < subfolders
 
-rm subfolders
