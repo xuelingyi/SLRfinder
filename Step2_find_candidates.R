@@ -39,9 +39,4 @@ save(data_cls, GT, map, ind, pop, file="GT.RData")
 ## the ranks used for defining candidate regions
 ranks = c("Dext_max_rank", "r2_rank", "nSNPs_rank", "chi2_rank")
 cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=1, alpha=0.05)
-# preliminary plots
-print(cand_regions$qq_plot)
-print(cand_regions$plot)
-pairs(cand_regions$data[,.(r2,Dext_max,nSNPs,chi2)])
-
 saveRDS(cand_regions, "cand_regions.rds")
