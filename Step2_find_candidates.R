@@ -1,38 +1,47 @@
-### get the top candidates for each parameter combiantion of each dataset
-mydata="BEL_MAL"
+## NOTE: there should be one (and only one) csv file saved in each dataset folder, corresponding to the sample information of that dataset. The csv file should include at least two columns named "SampleID" and "Population", and samples should be in the same order as those in the dataset.list (used in step 0). 
 
-source("get_candidate_region.R")
-source("Pval.R")
+### run this R script within each parameter folder of the dataset folder
+source("../../candidate_region_functions.R")
 
-## run inside each dataset folder
-setwd(mydata)
-cores=1
+### load data
+#LD clusters
+data_cls <- readRDS(file=paste0("data_cls.rds"))
+#SNPs
+files <- paste0("./file012/", list.files("file012"))
+indv_files <- files[grep(".indv",files)]
+pos_files <- files[grep(".pos",files)]
+GT_files <- files[!grepl(".log",files) & !grepl(".indv",files) & !grepl(".pos",files)]
+
+map <- rbindlist(lapply(1:length(pos_files),function(i){
+  pos <- fread(pos_files[i])
+  colnames(pos) <- c("Chr","Pos")
+  pos$SNP <- paste0(pos$Chr, "_", pos$Pos)
+  return(pos)
+}))
+GT <- do.call(cbind, lapply(1:length(pos_files),function(i){ as.matrix(fread(GT_files[i])[,-1]) }))
+#recode missing data
+GT[GT==-1] <- NA
+
+#pop and sif info
+sif = list.files("../")
+pop_info <- fread(paste0("../", sif[grep(".csv", sif)]))
+indv <- fread(indv_files[1], header=F)
+if(all(indv$V1 == pop_info$SampleID)) {
+  pop <- pop_info$Population
+  ind <- pop_info$SampleID
+}else{
+  print("indv and pop do not match!")}
+
+save(data_cls, GT, map, ind, pop, file="GT.RData")
+
+
+### get the top candidate LD clusters
 ## the ranks used for defining candidate regions
-ranks = c("Dext_max_rank","r2_rank","nSNPs_rank","chi2_rank")
+ranks = c("Dext_max_rank", "r2_rank", "nSNPs_rank", "chi2_rank")
+cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=1, alpha=0.05)
+# preliminary plots
+print(cand_regions$qq_plot)
+print(cand_regions$plot)
+pairs(cand_regions$data[,.(r2,Dext_max,nSNPs,chi2)])
 
-# run below within each parameter folder
-for (min_LD in c(8, 8.5, 9)) {
-  for (min.cl.size in c(10, 20)) {
-    setwd(paste0("LD", min_LD, "cl", min.cl.size))
-    
-    ### alternatively, save this script as candidate.R and run it in a unix loop:
-    #cd LD${ld}cl${cl}
-    #echo "min_LD="${ld} >> param
-    #echo "min.cl.size="${cl} >> param
-    #cat param ../candidate.R > candidate_LD${ld}cl${cl}.R
-    #srun singularity_wrapper exec Rscript --no-save candidate_LD${ld}cl${cl}.R
-    #cd ../
-    
-    load(paste0("LD", min_LD, "cl", min.cl.size, ".RData"))
-   
-    cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=cores, alpha=0.05)
-    pdf(paste0("../", mydata, "_LD", min_LD, "cl", min.cl.size, "_Rplots.pdf"))
-    print(cand_regions$qq_plot)
-    print(cand_regions$plot)
-    pairs(cand_regions$data[,.(r2,Dext_max,nSNPs,chi2)])
-    dev.off()
-
-    saveRDS(cand_regions, paste0(mydata, "_LD", min_LD, "cl", min.cl.size, "_cand_regions.rds"))
-    setwd("../")
-  }
-}
+saveRDS(cand_regions, "cand_regions.rds")
