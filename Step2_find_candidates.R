@@ -37,6 +37,6 @@ save(data_cls, GT, map, ind, pop, file="GT.RData")
 
 ### get the top candidate LD clusters
 ## the ranks used for defining candidate regions
-ranks = c("Dext_max_rank", "r2_rank", "nSNPs_rank", "chi2_rank")
+ranks = c("Dext_max_rank", "R2_rank", "nSNPs_rank", "chi2_rank")
 cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=1, alpha=0.05)
 saveRDS(cand_regions, "cand_regions.rds")
