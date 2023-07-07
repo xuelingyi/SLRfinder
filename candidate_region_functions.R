@@ -47,6 +47,7 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
     cl_info[,Dext_mean:=mean(Dext)] # mean
     cl_info[,Dext_max:=max(Dext)] # max
 
+    data[,Ind:=ind]
     data[,Pop:=pop]
     tbl <- data[,table(Pop,PC_scaled<0.5)]
     cl_info[,chi2:=sum(apply(tbl,1,function(x){
