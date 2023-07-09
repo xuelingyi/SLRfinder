@@ -5,15 +5,20 @@ bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${c
 done
 
 ###################### filtering and prepare datasets ######################## 
-# run by chromosome
-# create a directory for each dataset using the dataset name, and two subfolders named as a15m75 and GenoLD.snp100
-# the dataset folder should contain the individual list (named as dataset.list)
+### NOTE: create a directory for each dataset using the dataset name. The dataset folder should contain:
+### two files: 1. the list of samples to keep (named as dataset.list), and 2. the sample information (named as dataset.csv) including at least two columns "SampleID" and "Population".
+### two subfolders named a15m75 and GenoLD.snp100
 
 ind=west_pop8
-## the dataset's name
+## the dataset name
 
+## run the following script inside the dataset folder
+# cd ${ind}
+# mkdir a15m75
+# mkdir GenoLD.snp100
+
+# run in parallel by chromosome
 chr=${SLURM_ARRAY_TASK_ID}
-cd ${ind}
 
 ## filtering: change paths if needed
 bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
