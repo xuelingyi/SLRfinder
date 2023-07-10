@@ -43,8 +43,11 @@ get_single_LD_cluster <- function(LD.data, min_LD = 0.85, min.cl.size = 20){
 
 ## run the above function using different parameter combinations
 ## run this within the dataset folder
-for (min_LD in c(0.8, 0.85, 0.9)) {
-  for (min.cl.size in c(10, 20)) {
+
+#for (min_LD in c(0.8, 0.85, 0.9)) {
+#  for (min.cl.size in c(10, 20)) {
+min_LD=0.85
+min.cl.size=20
 
     ## create the paramter data folder and change directory inside
     system(paste0("mkdir ", "LD", min_LD*10, "cl", min.cl.size))
@@ -69,8 +72,8 @@ for (min_LD in c(0.8, 0.85, 0.9)) {
     data_cls$SNPs = apply(data_cls, 1, function(cl){ paste0(cl$chr, "_", cl$SNPs)})
     saveRDS(data_cls, file="data_cls.rds")
     setwd("../")
-  }
-}
+#  }
+#}
 ********************************************************************
 ## run VCFTools in unix (can also do this in R system if preferred)
 ## extract SNPs for each parameter test and each chr
