@@ -101,7 +101,7 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
       data.table(x$data,rank=x$rank,p=x$p_gc_adj,nSNPs=x$nSNPs,region=region,label=label)
     }))
 
-  candidates[,region:=apply(candidates,1,function(x)region=paste(x$chr, paste(range(as.numeric(do.call(rbind,strsplit(x$SNPs,"_",fixed=TRUE))[,2])),collapse=":"),sep=":"))]
+  candidates[,region:=apply(candidates,1,function(x)region=paste(x$chr, paste(range(as.numeric(do.call(rbind,strsplit(x$SNPs,"_",fixed=TRUE))[,2])),collapse="-"),sep=":"))]
   }
 
   cat("Closing gds file and returning data \n\n")
