@@ -53,6 +53,7 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
     cl_info[,chi2:=sum(apply(tbl,1,function(x){
     chisq.test(x)$statistic
      }))] # max
+    ## NOTE: this step might give the warning "In chisq.test(x) : Chi-squared approximation may be incorrect" if some of the populations have too few individuals (e.g., below 10 in NOR-TYR). However, this warning should not impact the final result because 1) when the individual distribution is uneven the chi-square is still significant, and 2) the final chi2 value is the sum of the chi-square statistic across all populations and thus should not be biased by one or a few tests. 
 
     return(cl_info[, .(chr, nSNPs, mean_LD, nE, c, R2, PVE, PVE2, Dext_mean, Dext_max, chi2, SNPs, data=list(data))])
 
