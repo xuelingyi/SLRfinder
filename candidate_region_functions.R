@@ -92,6 +92,7 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
   candidates <- data_out[which(p_gc_adj<alpha),]
   if(nrow(candidates) == 0){
     print("No candidates found! Report the top 5 ranked LD clusters.")
+    candidates <- data_out[,]
     PCA_het_data = data_out[1:5, ]
   } else {
     PCA_het_data <- rbindlist(apply(candidates,1,function(x){
