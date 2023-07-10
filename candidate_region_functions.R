@@ -75,9 +75,7 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
   data_out[,rank_exp:=as.integer(rowMeans(exp))]
   obs <- data_out[,rank]
   null <- unlist(exp)
-  p <- Pval(unlist(exp), obs, alternative="less")
-##the code below is slower
-##p <- unlist(mclapply(obs,function(x) (sum(null<x)+1)/(length(null)+1),mc.cores = cores))
+  p <- unlist(mclapply(obs,function(x) (sum(null<x)+1)/(length(null)+1),mc.cores = cores))
 
   ## check and corret for p-value inflation
   cat("Checking and correcting p-value inflation \n\n")
@@ -109,42 +107,4 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
   snpgdsClose(file_gds)
   system("rm file.gds")
   return(list(data_out=data_out, candidates=candidates, qq_data=qq_data, PCA_het_data=PCA_het_data))
-}
-
-
-######## pvalue function ######
-#Given a set of values (say from a randomisation) as a null distribution, calculate the P value under that distribution of particular observations.
-#exp: numeric vector of values expected under the null hypothesis (the null distribution)
-#obs: numeric vector of observations for which to calculate the P value
-#alternative: default two-tailed test, "less" or "greater" giving respective one-tailed tests
-Pval<-function(exp, obs,alternative = c("two.sided", "less", "greater")){
-  n<-length(exp)
-  #first work out exact matches (well defined, when no ties within vals - could get more or less conservative by choosing one end or the other of sets of tied values rather than mean, but would need to be diferent at opposite tails, or have some further arbitrary rule )
-  P<-rep(NA,length(obs))
-  exp<-sort(exp)
-  exac<-match(obs,exp)
-  rnk<-rank(exp, ties.method="average")
-
-  rnkb<-rank(exp, ties.method="min")
-  rnkc<-rank(exp, ties.method="max")
-
-  rnk<-rnk-0.5
-  P1<-rnk/n
-  P1[P1>0.5]<-P1[P1>0.5] - 0.5/n
-  P1[P1<0.5]<-P1[P1<0.5] + 0.5/n
-  P<-P1[exac]
-
-  #incorporate x values that fall into the gaps
-  int<-findInterval(obs,exp, all.inside=TRUE)
-  P2<- (1:(n-1)+0.5)/( n+1)
-  P2[P2>0.5]<-P2[P2>0.5] - 0.5/(n+1)
-  P2[P2<0.5]<-P2[P2<0.5] + 0.5/(n+1)
-
-  #sort out ends
-  P[obs < min(exp)]<- 1/(n+1)
-  P[obs > max(exp)]<- 1-(1/(n+1))
-  alternative<-alternative[1]
-  if(alternative=="two.sided") P<-ifelse(P > 0.5, 2*(1-P), 2*P)
-  if(alternative=="greater") P<- 1-P
-  return(P)
 }
