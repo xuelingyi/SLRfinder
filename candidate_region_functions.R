@@ -92,18 +92,17 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
   candidates <- data_out[which(p_gc_adj<alpha),]
   if(nrow(candidates) == 0){
     print("No candidates found! Report the top 5 ranked LD clusters.")
-    candidates <- data_out[,]
-    PCA_het_data = data_out[1:5, ]
-  } else {
-    PCA_het_data <- rbindlist(apply(candidates,1,function(x){
-      region=paste(x$chr, paste(range(as.numeric(do.call(rbind, strsplit(x$SNPs,"_",fixed=TRUE))[,2])),collapse =  "-"), sep=":")
-      label = paste(region, paste0("nSNPs=",x$nSNPs),sep=" | ")
-      label = paste(label,paste0("p=",signif(x$p_gc_adj,3)),sep=" | ")
-      data.table(x$data,rank=x$rank,p=x$p_gc_adj,nSNPs=x$nSNPs,region=region,label=label)
+    candidates <- data_out[1:5,]
+  } 
+  
+  PCA_het_data <- rbindlist(apply(candidates,1,function(x){
+    region=paste(x$chr, paste(range(as.numeric(do.call(rbind, strsplit(x$SNPs,"_",fixed=TRUE))[,2])),collapse =  "-"), sep=":")
+    label = paste(region, paste0("nSNPs=",x$nSNPs),sep=" | ")
+    label = paste(label,paste0("p=",signif(x$p_gc_adj,3)),sep=" | ")
+    data.table(x$data,rank=x$rank,p=x$p_gc_adj,nSNPs=x$nSNPs,region=region,label=label)
     }))
 
   candidates[,region:=apply(candidates,1,function(x)region=paste(x$chr, paste(range(as.numeric(do.call(rbind,strsplit(x$SNPs,"_",fixed=TRUE))[,2])),collapse="-"),sep=":"))]
-  }
 
   cat("Closing gds file and returning data \n\n")
   snpgdsClose(file_gds)
