@@ -8,7 +8,7 @@ library(igraph)
 library(data.table)
 
 ## input (LD.data): the VCFtools-estimated edge list (*.geno.ld) of correlation coefficients on SNP pairs.
-## output: a white list of SNPs that are in LD (threshold set by min_LD, default 0.9) and clusters of a minimum number of SNPs (min.cl.size, default 10).
+## output: a white list of SNPs that are in LD (threshold set by min_LD, default 0.85) and clusters of a minimum number of SNPs (min.cl.size, default 20).
 ## NOTE: run the function on each chr separately (the target region, SDR, should be continuous and one the same sex chromosomes)
 get_single_LD_cluster <- function(LD.data, min_LD = 0.85, min.cl.size = 20){
 
