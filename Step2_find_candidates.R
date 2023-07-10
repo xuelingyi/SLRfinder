@@ -1,6 +1,4 @@
-## NOTE: there should be one (and only one) csv file saved in each dataset folder, corresponding to the sample information of that dataset. The csv file should include at least two columns named "SampleID" and "Population", and samples should be in the same order as those in the dataset.list (used in step 0). 
-
-### run this R script within each parameter folder of the dataset folder
+### run this script within each parameter folder of the dataset folder
 source("../../candidate_region_functions.R")
 
 ### load data
@@ -34,9 +32,9 @@ if(all(indv$V1 == pop_info$SampleID)) {
 
 save(data_cls, GT, map, ind, pop, file="GT.RData")
 
-
 ### get the top candidate LD clusters
 ## the ranks used for defining candidate regions
 ranks = c("Dext_max_rank", "R2_rank", "nSNPs_rank", "chi2_rank")
 cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=1, alpha=0.05)
 saveRDS(cand_regions, "cand_regions.rds")
+
