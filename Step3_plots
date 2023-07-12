@@ -1,1 +1,37 @@
+library(data.table)
+library(cowplot)
+library(ggplot2)
+library(ggpubr)
+library(parallel)
+library(SNPRelate)
+alpha=0.05
+
+## Below is an example of plotting the results generated from the Step2 scripts and saved in the folder named by dataset/parameters
+dataset = "west_pop8"
+setwd(dataset)
+sif = read.csv(paste0(dataset, ".csv"))
+
+min_LD = 0.85
+min.cl.size = 20
+setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
+
+cand_regions = readRDS("cand_regions.rds")
+list2env(cand_regions, globalenv())
+PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="SampleID", sort=F)
+
+#write.csv(candidates[, c("region", "p_gc_adj", "rank", "nSNPs", "nSNPs_rank", "R2_rank", "Dext_max_rank", "chi2_rank")],paste0(dataset, "_can.csv"), row.names = F)
+  
+ggplot(qq_data, aes(x=exp, y=obs)) + 
+    geom_point(col=qq_data$col) + theme_bw() + theme(legend.position = "none") +
+    labs(title=paste0("lambda=", round(lambda,2)), x="Expected -log10(P)", y="Observed -log10(P)") +
+    geom_abline(slope = 1, intercept = 0, linewidth=0.5) +
+    geom_smooth(method = "lm", aes(x=exp, y=obs+0), col="salmon", linewidth=0.5)
+  
+ggplot(PCA_het_data, aes(PC_scaled,Het)) +
+    geom_smooth(method = "lm",se=FALSE,col="black") +
+    geom_point(aes(x=PC_scaled, y=Het, color=sex), alpha=0.6, size=2.5) +
+    scale_color_manual(values=c("Female"="indianred", "Male"="royalblue"), guide="none")+
+    theme_bw() +
+    facet_wrap(factor(label, levels=unique(PCA_het_data$label))~., ncol = 1) +
+    labs(x="PC1 (scaled)", y="Proportion heterozygous loci")
 
