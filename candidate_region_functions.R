@@ -88,6 +88,9 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
   data_out[,p_gc:=p_gc]
   data_out[,p_gc_adj:=p.adjust(p_gc,"fdr")]
 
+  qq_data$col=rep("steelblue", nrow(data_out))
+  qq_data$col[which(data_out$p_gc_adj<alpha)] <- "indianred"
+
   cat("Finding candidates \n\n")
   candidates <- data_out[which(p_gc_adj<alpha),]
   if(nrow(candidates) == 0){
