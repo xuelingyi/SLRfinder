@@ -21,10 +21,10 @@ GT <- do.call(cbind, lapply(1:length(pos_files),function(i){ as.matrix(fread(GT_
 GT[GT==-1] <- NA
 
 #pop and sif info
+indv <- fread(indv_files[1], header=F)
 sif = list.files("../")
 pop_info <- fread(paste0("../", sif[grep(".csv", sif)]))
-indv <- fread(indv_files[1], header=F)
-pop_info = pop_info[factor(pop_info$SampleID, levels = ind),]
+pop_info = pop_info[factor(pop_info$SampleID, levels = indv$V1),]
 if(all(indv$V1 == pop_info$SampleID)) {
   pop <- pop_info$Population
   ind <- pop_info$SampleID
