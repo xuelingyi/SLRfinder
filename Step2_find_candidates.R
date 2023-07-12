@@ -24,7 +24,7 @@ GT[GT==-1] <- NA
 indv <- fread(indv_files[1], header=F)
 sif = list.files("../")
 pop_info <- fread(paste0("../", sif[grep(".csv", sif)]))
-pop_info = pop_info[factor(pop_info$SampleID, levels = indv$V1),]
+pop_info = pop_info[order(factor(pop_info$SampleID, levels = indv$V1)),]
 if(all(indv$V1 == pop_info$SampleID)) {
   pop <- pop_info$Population
   ind <- pop_info$SampleID
