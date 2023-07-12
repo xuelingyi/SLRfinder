@@ -27,7 +27,8 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
     het <- apply(gt, 1, function(x) length(which(x==1))/length(na.omit(x)))
 
     ## polarize so correlation always positive
-    if(cor(het,PC1,use = "pair")[1,1]<0) PC1 <- -PC1
+    my.cor = cor(het,PC1,use = "pair")[1,1]
+    if(!(is.na(my.cor)) & my.cor<0) PC1 <- -PC1
     data <- data.table(PC1=as.vector(PC1),Het=het)
     data$PC2 = PC2
     R2 <- summary(lm(PC1~Het,data))$adj.r.squared
