@@ -110,5 +110,5 @@ get_candidate_regions <- function(data_cls, GT, map, pop, ranks=c("Dext_max_rank
   cat("Closing gds file and returning data \n\n")
   snpgdsClose(file_gds)
   system("rm file.gds")
-  return(list(data_out=data_out, candidates=candidates, qq_data=qq_data, PCA_het_data=PCA_het_data))
+  return(list(data_out=data_out, candidates=candidates, qq_data=qq_data, PCA_het_data=PCA_het_data, lambda=lambda))
 }
