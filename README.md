@@ -1,4 +1,4 @@
-# SDRfinder
+# SLRfinder
 
 This method is aimed to identify candidate sex-determining regions (SDRs) based on linkage and heterozygosity using SNP genotypes. Individual sexes can be used to further validate the candidate regions but are not required in this method to identify candidates. The method is written in R scripts and can be readily applied to other datasets.  
 
