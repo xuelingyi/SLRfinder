@@ -10,11 +10,18 @@ Data were obtained from the published whole-genome sequencing of 887 wild indivi
 
 Datasets are generated based on the characterized sex-determining regions (SDRs) in Yi et al. (in prep). 
 
-Total 13 datasets: 
-1. ELpop27: total 27 poplations sexed by the LG12 SDR, total 558 individuals
-2. WLpop7: total 7 populations sexed by the LG3 SDR, total 146 individuals
-3. 11 datasets each containing one population:
-the 5 non-European populations: RUS-LEN, JAP-BIW, USA-HLA, CAN-FLO, CAN-TEM
-the 4 EU populations of unknown SDR (based on Yi et al.): SCO-HAR, GBR-GRO, FRA-VEY, SWE-NAV
-one population identified with only females: FIN-KRK (the non-European population CAN-TEM also has females only)
-one population where both LG3 and LG12 SDRs coexist: POL-GDY
+**Step0: generate the input vcf dataset and estimate LD**
+The vcf dataset can be filtered using VCFtools, e.g.:
+$ vcftools --vcf myinput.vcf --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all --out myoutput
+
+or using Stacks - popoulations, e.g.:
+$ populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
+
+Then LD is calculated using VCFtools:
+$ vcftools --vcf mydata.vcf --geno-r2 --ld-window 100 --out mydata
+
+**Step1: get LD clusters **
+
+
+
+
