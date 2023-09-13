@@ -11,16 +11,31 @@ Data were obtained from the published whole-genome sequencing of 887 wild indivi
 Datasets are generated based on the characterized sex-determining regions (SDRs) in Yi et al. (in prep). 
 
 **Step0: generate the input vcf dataset and estimate LD**
+
+
 The vcf dataset can be filtered using VCFtools, e.g.:
+
 $ vcftools --vcf myinput.vcf --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all --out myoutput
 
+
 or using Stacks - popoulations, e.g.:
+
 $ populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 
+
 Then LD is calculated using VCFtools:
+
 $ vcftools --vcf mydata.vcf --geno-r2 --ld-window 100 --out mydata
 
-**Step1: get LD clusters **
+
+**Step1: get LD clusters**
+
+
+default min.cl.size=20 for whole-genome sequencing SNPs; use larger sizes for stack loci (e.g., min.cl.size=100) so that stacks (should be physically linked) are not further broken.
+
+**Step2: identify candidate SLRs**
+
+
 
 
 
