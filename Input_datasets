@@ -17,5 +17,3 @@ bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
 | vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all -c \
 | bcftools view -Oz -o ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz
 
-
-
