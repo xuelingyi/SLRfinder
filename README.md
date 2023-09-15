@@ -34,6 +34,8 @@ The output LD edge list (mydata.geno.ld) will be saved in the dataset folder and
 **Step1: get LD clusters**
 
 Run the R codes below in the dataset folder which should contain: the sample information (mydata.csv), the LD edge list (mydata.geno.ld), and the genome information (a file named reference) where colum1 has the chr ID in the vcf file (usually the contig names in the reference genome) and colum2 the corresponding chromosome names that are more informative (e.g., LGx). 
+
+If using big data (such as whole-genome resequencing), the script can be made faster by running on each chr in parallel (see notes below).
 ```
 ####### input data information #######
 ## dataset name
@@ -43,9 +45,11 @@ sif = read.csv(paste0(mydata, ".csv"))
 # genome information (contig names in column1, chromosome names in column2)
 LG = read.table("reference", header = F)
 names(LG) = c("chr", "CHR")
+
 # LD edge list
 geno.LD <- read.table(paste0(mydata, ".geno.ld"), header = T)
 names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
+## or split up the edge list by chr: mydata_chr.geno.ld
 
 ## set parameters
 # default for whole-genome sequencing data
@@ -66,6 +70,7 @@ data_cls <- NULL
 for (i in 1:nrow(LG)) {
   chr = LG[i, "chr"]
   data = geno.LD[geno.LD$CHR == chr, ]
+
   out = get_single_LD_cluster(data, min_LD = min_LD, min.cl.size=min.cl.size)
   position = as.data.frame(unlist(out$SNPs))
   position = cbind(rep(chr, sum(out$nSNPs)), position)
