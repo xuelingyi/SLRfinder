@@ -46,11 +46,6 @@ sif = read.csv(paste0(mydata, ".csv"))
 LG = read.table("reference", header = F)
 names(LG) = c("chr", "CHR")
 
-# LD edge list
-geno.LD <- read.table(paste0(mydata, ".geno.ld"), header = T)
-names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
-## or split up the edge list by chr: mydata_chr.geno.ld
-
 ## set parameters
 # default for whole-genome sequencing data
 min_LD=0.85
@@ -58,6 +53,10 @@ min.cl.size=20
 # use loser thresholds for RADseq data which are much sparser
 #min_LD=0.2
 #min.cl.size=5
+
+# if using big data: skip the following two lines and split the edge list by chr: mydata_${chr}.geno.ld
+geno.LD <- read.table(paste0(mydata, ".geno.ld"), header = T)
+names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
 
 source("SLRfinder_functions.R")
 
@@ -70,6 +69,10 @@ data_cls <- NULL
 for (i in 1:nrow(LG)) {
   chr = LG[i, "chr"]
   data = geno.LD[geno.LD$CHR == chr, ]
+
+  ## if using big data and *geno.ld by chr
+  # geno.LD = read.table(paste0("../", mydata, "_", chr, ".geno.ld"), header = T)
+  # names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
 
   out = get_single_LD_cluster(data, min_LD = min_LD, min.cl.size=min.cl.size)
   position = as.data.frame(unlist(out$SNPs))
