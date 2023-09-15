@@ -1,6 +1,6 @@
 # SLRfinder
 
-This method is aimed to identify candidate sex-linked regions (SLRs) based on linkage and heterozygosity using SNP genotypes. Individual sexes can be used to further validate the candidate regions but are not required for this method to identify candidates. The method is written in R scripts and can be readily applied to any vcf datasets.  
+This method is aimed to identify candidate sex-linked regions (SLRs) based on linkage and heterozygosity using SNP genotypes. Individual sexes can be used to further validate the candidate regions but are not required for this method to identify candidates. The method is mostly written in R scripts and can be readily applied to any vcf datasets.  
 
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
 <br/> </br>
@@ -12,6 +12,7 @@ Create a directory for each dataset using the dataset name. The dataset folder s
 1. the list of samples to keep (named as dataset.list)
 
 2. the sample information table (named as dataset.csv), including at least two columns named "SampleID" (basically the same as the dataset.list) and "Population".
+<br/> </br>
 
 The vcf dataset can be filtered using VCFtools, e.g.:
 ```
@@ -28,6 +29,7 @@ Then LD is calculated using the retained SNPs in VCFtools. The filtering and LD 
 $ vcftools --vcf mydata.vcf --geno-r2 --ld-window 100 --out mydata
 ```
 The output LD edge list (mydata.geno.ld) will be saved in the dataset folder and used in the R codes below. 
+<br/> </br>
 
 **Step1: get LD clusters**
 
@@ -99,8 +101,9 @@ done
 cd ../
 ```
 This script will generate in the parameter-named folder another subfolder named file012 containing the vcf files (by chromosome) of the SNPs included in the LD clusters.  
+<br/> </br>
 
-**Step2: identify candidate SLRs**
+**Step2: identify candidate SLRs and plot the results**
 
 Run the R script below within the dataset folder. 
 ```
@@ -120,7 +123,7 @@ min_LD=0.85
 min.cl.size=20 
 setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 ## load the data of LD clusters generated in step 1
-data_cls <- readRDS(file=paste0("data_cls.rds"))
+data_cls <- readRDS("data_cls.rds")
 
 source("SLRfinder_functions.R")
 
@@ -152,20 +155,27 @@ if(all(indv$V1 == pop_info$SampleID)) {
 
 save(data_cls, GT, map, ind, pop, file="GT.RData")
 
-### get the candidate LD clusters: output all significant candidates; if no significant result is found, output the five LD clusters that have the lowest adjusted p-values
+### get the candidate LD clusters: output all significant candidates; if no significant result is found, output the five LD clusters that have the lowest adjusted p-values (the top-ranked LD clusters)
 ## the ranks used for defining candidate regions
 ranks = c("Dext_max_rank", "R2_rank", "nSNPs_rank", "chi2_rank")
 cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=1, alpha=0.05)
 saveRDS(cand_regions, "cand_regions.rds")
-
 #print(cand_regions$candidates)
+
+#cand_regions = readRDS("cand_regions.rds")
+### plot results ###
+alpha=0.05
+list2env(cand_regions, globalenv())
+lambda <- lm(obs~exp+0, cand_regions$qq_data)$coefficients
+qq_data$col=rep("steelblue", nrow(data_out))
+qq_data$col[which(data_out$p_gc_adj<alpha)] <- "indianred"
+PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="Run", sort=F)
+
+candidates = merge(candidates, LG, by="chr")
+write.csv(candidates[, c("chr", "CHR", "region", "p_gc_adj", "nSNPs", "rank",  "nSNPs_rank", "R2_rank", "Dext_max_rank", "chi2_rank")], paste0(mydata, "_can.csv"), row.names = F)
+
+
 ```
-
-**Step3. Plot the candidate regions**
-
-
-
-
 
 
 
