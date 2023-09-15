@@ -5,7 +5,6 @@ This method is aimed to identify candidate sex-linked regions (SLRs) based on li
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
 
 **Step0: generate the input vcf dataset and estimate LD**
-
 Create a directory for each dataset using the dataset name. The dataset folder should contain two files: 
 1. the list of samples to keep (named as dataset.list)
 2. the sample information table (named as dataset.csv), including at least two columns named "SampleID" (basically the same as the dataset.list) and "Population".
