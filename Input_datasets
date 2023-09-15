@@ -1,0 +1,21 @@
+########################## Nine-spined sticklebacks ##########################
+## Get biallelic SNPs (by chromosome) from the GATK-processed data including all sequenced individuals
+for chr in {1..21}
+do
+bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${chr}.vcf.gz
+done
+
+## Subset individuals into different datasets
+ind=west_pop8
+## the dataset name
+cd ${ind}
+mkdir a15m75 GenoLD.snp100
+
+# subset vcf data by chromosome (run in parallel)
+chr=${SLURM_ARRAY_TASK_ID}
+bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
+| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all -c \
+| bcftools view -Oz -o ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz
+
+
+
