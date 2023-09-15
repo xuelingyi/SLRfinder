@@ -3,6 +3,7 @@
 This method is aimed to identify candidate sex-linked regions (SLRs) based on linkage and heterozygosity using SNP genotypes. Individual sexes can be used to further validate the candidate regions but are not required for this method to identify candidates. The method is written in R scripts and can be readily applied to any vcf datasets.  
 
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
+<br/> </br>
 
 **Step0: generate the input vcf dataset and the LD edge list**
 
