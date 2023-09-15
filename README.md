@@ -26,11 +26,11 @@ or using popoulations in Stacks, e.g.:
 $ populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 ```
 
-Then LD is calculated using the retained SNPs in VCFtools:
-
+Then LD is calculated using the retained SNPs in VCFtools. The filtering and LD estimation can be down on all SNPs combined or separately on each chromosome if the dataset is too large.
 ```
 $ vcftools --vcf mydata.vcf --geno-r2 --ld-window 100 --out mydata
 ```
+The output LD edge list (mydata.geno.ld) will be used in the R codes below. 
 
 **Step1: get LD clusters**
 
@@ -74,6 +74,30 @@ data_cls$SNPs = apply(data_cls, 1, function(cl){ paste0(cl$chr, "_", cl$SNPs)})
 saveRDS(data_cls, file="data_cls.rds")
 #setwd("../")
 ```
+
+
+ls | grep cl | grep LD > subfolders
+module load vcftools
+
+while read subfolder
+do
+cd ${subfolder}
+mkdir file012
+
+for chr in {1..37}
+do
+vcftools --vcf ../../stacks2/populations.snps.vcf \
+--positions ./whitelist/position.LG${chr}.list \
+--012 \
+--out ./file012/McK2020_LG${chr}_a15m75_LD${LD}cl${cl}
+done
+
+cd ../
+done < subfolders
+
+
+
+![image](https://github.com/xuelingyi/SLRfinder/assets/76267685/1e3c41c5-b9c5-4e34-82dd-5254f1d18fc7)
 
 **Step2: identify candidate SLRs**
 
