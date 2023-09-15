@@ -12,13 +12,16 @@ Datasets are generated based on the characterized sex-determining regions (SDRs)
 
 **Step0: generate the input vcf dataset and estimate LD**
 
+create a directory for each dataset using the dataset name. The dataset folder should contain two files: 
+1. the list of samples to keep (named as dataset.list)
+2. the sample information (named as dataset.csv) including at least two columns named "SampleID" (basically the same as the dataset.list) and "Population".
 
-The vcf dataset can be filtered using VCFtools, e.g.:
+Filtering of the used datasets is archived in the file "Input_datasets". Basically, the vcf dataset can be filtered using VCFtools, e.g.:
 
 $ vcftools --vcf myinput.vcf --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all --out myoutput
 
 
-or using Stacks - popoulations, e.g.:
+or using popoulations in Stacks, e.g.:
 
 $ populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 
