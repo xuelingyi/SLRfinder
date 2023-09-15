@@ -40,6 +40,7 @@ If using big data (such as whole-genome resequencing), the script can be made fa
 ####### input data information #######
 ## dataset name
 mydata = "mydata"
+
 # sample information 
 sif = read.csv(paste0(mydata, ".csv"))
 # genome information (contig names in column1, chromosome names in column2)
@@ -51,12 +52,12 @@ names(LG) = c("chr", "CHR")
 min_LD=0.85
 min.cl.size=20 
 # use loser thresholds for RADseq data which are much sparser
-#min_LD=0.2
-#min.cl.size=5
+# min_LD=0.2
+# min.cl.size=5
 
-# if using big data: skip the following two lines and split the edge list by chr: mydata_${chr}.geno.ld
 geno.LD <- read.table(paste0(mydata, ".geno.ld"), header = T)
 names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
+# If using big data: skip the above two lines and split the edge list by chr: mydata_${chr}.geno.ld
 
 source("SLRfinder_functions.R")
 
@@ -68,9 +69,9 @@ system(paste0("mkdir ", "whitelist"))
 data_cls <- NULL
 for (i in 1:nrow(LG)) {
   chr = LG[i, "chr"]
-  data = geno.LD[geno.LD$CHR == chr, ]
 
-  ## if using big data and *geno.ld by chr
+  data = geno.LD[geno.LD$CHR == chr, ]
+  ## if using big data and *geno.ld by chr, skip the above line and run below
   # data = read.table(paste0("../", mydata, "_", chr, ".geno.ld"), header = T)
   # names(data) = c("CHR", "from", "to", "N_INDV", "r2")
 
