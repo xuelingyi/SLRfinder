@@ -44,7 +44,7 @@ sif = read.csv(paste0(mydata, ".csv"))
 LG = read.table("reference", header = F)
 names(LG) = c("chr", "CHR")
 # LD edge list
-geno.LD <- read.table("mydata.geno.ld", header = T)
+geno.LD <- read.table(paste0(mydata, ".geno.ld"), header = T)
 names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
 
 ## set parameters
