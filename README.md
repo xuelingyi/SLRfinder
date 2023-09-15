@@ -14,6 +14,7 @@ Create a directory for each dataset using the dataset name. The dataset folder s
 
 The vcf dataset can be filtered using VCFtools, e.g.:
 
+'
 $ vcftools --vcf myinput.vcf --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all --out myoutput
 
 or using popoulations in Stacks, e.g.:
