@@ -1,4 +1,6 @@
 ########################## Nine-spined sticklebacks ##########################
+Data were obtained from the published whole-genome sequencing of 887 wild individuals of Pungitius pungitius in Feng et al. (Feng, X., Merilä, J., & Löytynoja, A. (2022). Complex population history affects admixture analyses in nine‐spined sticklebacks. Molecular Ecology, 31(20), 5386-5401. https://onlinelibrary.wiley.com/doi/full/10.1111/mec.16651). 
+
 ## Get biallelic SNPs (by chromosome) from the GATK-processed data including all sequenced individuals
 for chr in {1..21}
 do
@@ -6,8 +8,7 @@ bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${c
 done
 
 ## Subset individuals into different datasets
-ind=west_pop8
-## the dataset name
+ind=mydataset   ## this is the dataset name
 cd ${ind}
 mkdir a15m75 GenoLD.snp100
 
