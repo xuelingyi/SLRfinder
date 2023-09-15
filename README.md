@@ -71,8 +71,8 @@ for (i in 1:nrow(LG)) {
   data = geno.LD[geno.LD$CHR == chr, ]
 
   ## if using big data and *geno.ld by chr
-  # geno.LD = read.table(paste0("../", mydata, "_", chr, ".geno.ld"), header = T)
-  # names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
+  # data = read.table(paste0("../", mydata, "_", chr, ".geno.ld"), header = T)
+  # names(data) = c("CHR", "from", "to", "N_INDV", "r2")
 
   out = get_single_LD_cluster(data, min_LD = min_LD, min.cl.size=min.cl.size)
   position = as.data.frame(unlist(out$SNPs))
