@@ -22,19 +22,58 @@ $ vcftools --vcf myinput.vcf \
 
 or using popoulations in Stacks, e.g.:
 
+```
 $ populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
+```
 
 Then LD is calculated using the retained SNPs in VCFtools:
 
+```
 $ vcftools --vcf mydata.vcf --geno-r2 --ld-window 100 --out mydata
-
+```
 
 **Step1: get LD clusters**
 
+Run the R codes below in the dataset folder
 
-mydata.geno.ld 
+```
+## input data
+# sample information 
+sif = read.csv("mydata.csv")
+# genome information (if contig names in column1 differ from the chromosome names in column2)
+LG = read.table("reference", header = F)
+names(LG) = c("chr", "CHR")
+# LD edge list
+geno.LD <- read.table("mydata.geno.ld", header = T)
+names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
 
-default min.cl.size=20 for whole-genome sequencing SNPs; use larger sizes for stack loci (e.g., min.cl.size=100) so that stacks (should be physically linked) are not further broken.
+## set parameters
+# default for whole-genome sequencing data
+min_LD=0.85
+min.cl.size=20 
+# use loser thresholds for RADseq data which are much sparser
+min_LD=0.2
+min.cl.size=5
+
+source("SLRfinder_functions.R")
+system(paste0("mkdir ", "LD", min_LD*10, "cl", min.cl.size))
+setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
+system(paste0("mkdir ", "whitelist"))
+data_cls <- NULL
+for (i in 1:nrow(LG)) {
+  chr = LG[i, "chr"]
+  data = geno.LD[geno.LD$CHR == chr, ]
+  out = get_single_LD_cluster(data, min_LD = min_LD, min.cl.size=min.cl.size)
+  position = as.data.frame(unlist(out$SNPs))
+  position = cbind(rep(chr, sum(out$nSNPs)), position)
+  write.table(position, paste0("./whitelist/position.LG", i, ".list"), sep="\t", quote = F, row.names = F)
+  data_cls <- rbind(data_cls, out)
+}
+#range(data_cls$nSNPs)
+data_cls$SNPs = apply(data_cls, 1, function(cl){ paste0(cl$chr, "_", cl$SNPs)})
+saveRDS(data_cls, file="data_cls.rds")
+#setwd("../")
+```
 
 **Step2: identify candidate SLRs**
 
