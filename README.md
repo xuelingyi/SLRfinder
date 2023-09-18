@@ -206,7 +206,9 @@ PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="SampleID", sort=F)
 candidates = merge(candidates, LG, by="chr")
 write.csv(candidates[, c("chr", "lg", "region", "p_gc_adj", "nSNPs", "rank",  "nSNPs_rank", "R2_rank", "Dext_max_rank", "chi2_rank")], paste0(mydata, "_can.csv"), row.names = F)
 
-Q = ggplot(qq_data, aes(x=exp, y=obs)) + 
+pdf(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".pdf"), width = 6, height = 4)
+
+ggplot(qq_data, aes(x=exp, y=obs)) + 
   geom_point(col=qq_data$col) + theme_bw() + theme(legend.position = "none") +
   labs(title=paste0("QQ-plot\n", "lambda=", round(lambda,2)),
        x="Expected -log10(P)", y="Observed -log10(P)") +
@@ -223,25 +225,18 @@ for(r in unique(PCA_het_data$region)) {
   title = paste0(lg,  "\n",
                  label[1], "\n",
                  label[2], " ", label[3])  
-  
-  assign(paste0("pop.plot", i), ggplot(pca, aes(PC_scaled,Het)) +
-    geom_smooth(method = "lm",se=FALSE, col="black") +
-    geom_point(aes(x=PC_scaled, y=Het, color=Population), alpha=0.6, size=2.5) +
-    theme_bw() +
-    labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
-         title=title) +
-    theme(title = element_text(size=10)))
+  #paste0("pop.plot", i), 
+  #assign
+  print (ggplot(pca, aes(PC_scaled,Het)) +
+           geom_smooth(method = "lm",se=FALSE, col="black") +
+           geom_point(aes(x=PC_scaled, y=Het, color=Population), alpha=0.6, size=2.5) +
+           theme_bw() +
+           labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
+                title=title) +
+           theme(title = element_text(size=10)))
   
   i=i+1
 }
-
-paste0("pop.plot", 0:(i-1))
-
-png(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".png"), height = 4*i, width = 8, units = "in", res=600)
-pdf(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".pdf"), height = 4*i, width = 8)
-annotate_figure(ggarrange(nrow=1, widths = c(0.5, i), 
-                          labels = c("A)", "B)"), Q, get(pop.plot0)),
-                top=paste0(mydata, "_LD", min_LD, "cl", min.cl.size))
 dev.off()
 
 ```
