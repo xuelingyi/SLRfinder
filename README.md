@@ -34,14 +34,12 @@ vcftools --gzvcf ./a15m75/${ind}_${lg}_a15m75.vcf.gz \
 --out ./GenoLD.snp100/${ind}_${lg}_a15m75
 ```
 <br/> </br>
-
 If the dataset is small (e.g., RADseq data), all chromosomes can be processed together. Filtered can be done popoulations in Stacks, e.g.:
 ```
 populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m75
 ```
 <br/> </br>
-
 The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be input in the R codes below. 
 <br/> </br>
 
