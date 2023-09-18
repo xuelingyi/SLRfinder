@@ -136,7 +136,7 @@ mydata = "mydata"
 # sample information 
 sif = read.csv(paste0(mydata, ".csv"))
 # genome information (contig names in column1, chromosome names in column2)
-LG = read.table("reference", header = F)
+LG = read.table("reference.list", header = F)
 names(LG) = c("chr", "CHR")
 
 ## parameters
@@ -189,7 +189,7 @@ saveRDS(cand_regions, "cand_regions.rds")
 ## if starting in the dataset folder using the above saved outputs:
 # mydata = "McK2020"
 # sif = read.csv(paste0(mydata, ".csv"))
-# LG = read.table("reference", header = F)
+# LG = read.table("reference.list", header = F)
 # names(LG) = c("chr", "CHR")
 # min_LD=0.85
 # min.cl.size=20
@@ -201,9 +201,9 @@ list2env(cand_regions, globalenv())
 lambda <- lm(obs~exp+0, cand_regions$qq_data)$coefficients
 qq_data$col=rep("steelblue", nrow(data_out))
 qq_data$col[which(data_out$p_gc_adj<alpha)] <- "indianred"
-PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="Run", sort=F)
+PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="SampleID", sort=F)
 
-candidates = merge(candidates, reference, by="chr")
+candidates = merge(candidates, LG, by="chr")
 write.csv(candidates[, c("chr", "lg", "region", "p_gc_adj", "nSNPs", "rank",  "nSNPs_rank", "R2_rank", "Dext_max_rank", "chi2_rank")], paste0(mydata, "_can.csv"), row.names = F)
 
 Q = ggplot(qq_data, aes(x=exp, y=obs)) + 
@@ -219,7 +219,7 @@ for(r in unique(PCA_het_data$region)) {
   
   label = unlist(strsplit(unique(pca$label), split=" | ", fixed = T))
   chr = unlist(strsplit(label[1], ":"))[1]
-  lg = reference[reference$chr == chr, "lg"]
+  lg = LG[LG$chr == chr, "lg"]
   title = paste0(lg,  "\n",
                  label[1], "\n",
                  label[2], " ", label[3])  
