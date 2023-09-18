@@ -235,10 +235,12 @@ for(r in unique(PCA_het_data$region)) {
   i=i+1
 }
 
+paste0("pop.plot", 0:(i-1))
+
 png(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".png"), height = 4*i, width = 8, units = "in", res=600)
 pdf(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".pdf"), height = 4*i, width = 8)
 annotate_figure(ggarrange(nrow=1, widths = c(0.5, i), 
-                          labels = c("A)", "B)"), Q, get(paste0("pop.plot", 0:(i-1)))),
+                          labels = c("A)", "B)"), Q, get(pop.plot0)),
                 top=paste0(mydata, "_LD", min_LD, "cl", min.cl.size))
 dev.off()
 
