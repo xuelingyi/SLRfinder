@@ -1,13 +1,13 @@
 # SLRfinder
 
-This method is aimed to identify candidate sex-linked regions (SLRs) based on linkage and heterozygosity using SNP genotypes. Individual sexes can be used to further validate the candidate regions but are not required for this method to identify candidates. The method is mostly written in R scripts and can be readily applied to any vcf datasets.  
+This method is aimed to identify candidate sex-linked regions (SLRs) based on linkage and heterozygosity using SNP genotypes. Individual sexes can be used to further validate the candidate regions but are not required for this method to identify SLR candidates. The method is mostly written in R scripts and can be readily applied to any vcf datasets.  
 
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
 <br/> </br>
 
 **Step0: generate the input vcf dataset and the LD edge list**
 
-Create a directory for each dataset using the dataset name. The dataset folder should contain:
+Create a folder directory for each dataset using the dataset name. The dataset folder should contain:
 1. the SNP genotypes in the vcf format (mydata.vcf or mydata.vcf.gz) 
 2. the sample information file (dataset.csv), including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population"
 3. the genome information (reference.list), including two space-delimited columns of the contig/scaffold ID in the reference genome and the corresponding chromosome names that are more informative (e.g., LGx). The two columns can be identical if the contigs have been renamed as the human-informative version in the vcf file. 
@@ -33,13 +33,11 @@ vcftools --gzvcf ./a15m75/${ind}_${lg}_a15m75.vcf.gz \
 --geno-r2 --ld-window 100 \
 --out ./GenoLD.snp100/${ind}_${lg}_a15m75
 ```
-<br/> </br>
 If the dataset is small (e.g., RADseq data), all chromosomes can be processed together. Filtered can be done popoulations in Stacks, e.g.:
 ```
 populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m75
 ```
-<br/> </br>
 The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be input in the R codes below. 
 <br/> </br>
 
@@ -181,10 +179,19 @@ save(data_cls, GT, map, ind, pop, file="GT.RData")
 ranks = c("Dext_max_rank", "R2_rank", "nSNPs_rank", "chi2_rank")
 cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=1, alpha=0.05)
 saveRDS(cand_regions, "cand_regions.rds")
-#print(cand_regions$candidates)
+#cand_regions$candidates$regions
 
-#cand_regions = readRDS("cand_regions.rds")
 ### plot results ###
+## if starting in the dataset folder using the above saved outputs:
+# mydata = "McK2020"
+# sif = read.csv(paste0(mydata, ".csv"))
+# LG = read.table("reference", header = F)
+# names(LG) = c("chr", "CHR")
+# min_LD=0.85
+# min.cl.size=20
+# setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
+# cand_regions = readRDS("cand_regions.rds")
+
 alpha=0.05
 list2env(cand_regions, globalenv())
 lambda <- lm(obs~exp+0, cand_regions$qq_data)$coefficients
@@ -192,7 +199,44 @@ qq_data$col=rep("steelblue", nrow(data_out))
 qq_data$col[which(data_out$p_gc_adj<alpha)] <- "indianred"
 PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="Run", sort=F)
 
-candidates = merge(candidates, LG, by="chr")
-write.csv(candidates[, c("chr", "CHR", "region", "p_gc_adj", "nSNPs", "rank",  "nSNPs_rank", "R2_rank", "Dext_max_rank", "chi2_rank")], paste0(mydata, "_can.csv"), row.names = F)
+candidates = merge(candidates, reference, by="chr")
+write.csv(candidates[, c("chr", "lg", "region", "p_gc_adj", "nSNPs", "rank",  "nSNPs_rank", "R2_rank", "Dext_max_rank", "chi2_rank")], paste0(mydata, "_can.csv"), row.names = F)
+
+Q = ggplot(qq_data, aes(x=exp, y=obs)) + 
+  geom_point(col=qq_data$col) + theme_bw() + theme(legend.position = "none") +
+  labs(title=paste0("QQ-plot\n", "lambda=", round(lambda,2)),
+       x="Expected -log10(P)", y="Observed -log10(P)") +
+  geom_abline(slope = 1, intercept = 0, linewidth=0.5) +
+  geom_smooth(method = "lm", aes(x=exp, y=obs+0), col="salmon", linewidth=0.5)
+
+i=0
+for(r in unique(PCA_het_data$region)) {
+  pca = PCA_het_data[PCA_het_data$region == r, ]
+  
+  label = unlist(strsplit(unique(pca$label), split=" | ", fixed = T))
+  chr = unlist(strsplit(label[1], ":"))[1]
+  lg = reference[reference$chr == chr, "lg"]
+  title = paste0(lg,  "\n",
+                 label[1], "\n",
+                 label[2], " ", label[3])  
+  
+  assign(paste0("pop.plot", i), ggplot(pca, aes(PC_scaled,Het)) +
+    geom_smooth(method = "lm",se=FALSE, col="black") +
+    geom_point(aes(x=PC_scaled, y=Het, color=Population), alpha=0.6, size=2.5) +
+    theme_bw() +
+    labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
+         title=title) +
+    theme(title = element_text(size=10)))
+  
+  i=i+1
+}
+
+png(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".png"), height = 4*i, width = 8, units = "in", res=600)
+pdf(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".pdf"), height = 4*i, width = 8)
+annotate_figure(ggarrange(nrow=1, widths = c(0.5, i), 
+                          labels = c("A)", "B)"), Q, get(paste0("pop.plot", 0:(i-1)))),
+                top=paste0(mydata, "_LD", min_LD, "cl", min.cl.size))
+dev.off()
+
 ```
 
