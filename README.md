@@ -10,7 +10,7 @@ Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, pa
 Create a directory for each dataset using the dataset name. The dataset folder should contain:
 1. the SNP genotypes in the vcf format (mydata.vcf or mydata.vcf.gz) 
 2. the sample information file (dataset.csv), including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population"
-3. the genome information (reference.list), including two columns of the contig/scaffold ID in the reference genome and the corresponding chromosome names that are more informative (e.g., LGx). 
+3. the genome information (reference.list), including two columns of the contig/scaffold ID in the reference genome and the corresponding chromosome names that are more informative (e.g., LGx). The two columns can be identical if the contigs have been renamed as the human-informative version in the vcf file. 
 <br/> </br>
 
 If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example of filtering and LD estimation.  
