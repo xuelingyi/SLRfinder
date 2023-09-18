@@ -181,6 +181,8 @@ cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm
 saveRDS(cand_regions, "cand_regions.rds")
 #cand_regions$candidates$regions
 
+
+
 ### plot results ###
 ## if starting in the dataset folder using the above saved outputs:
 # mydata = "McK2020"
