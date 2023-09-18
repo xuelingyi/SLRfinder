@@ -7,11 +7,7 @@ Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, pa
 
 **Step0: generate the input vcf dataset and the LD edge list**
 
-Create a directory for each dataset using the dataset name. The dataset folder should contain two files: 
-
-1. the list of samples to keep (named as dataset.list)
-
-2. the sample information table (named as dataset.csv), including at least two columns named "SampleID" (basically the same as the dataset.list) and "Population".
+Create a directory for each dataset using the dataset name. The dataset folder should contain a file (dataset.csv) of the sample information, including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population".
 <br/> </br>
 
 The vcf dataset can be filtered using VCFtools, e.g.:
