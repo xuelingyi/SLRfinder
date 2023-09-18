@@ -14,7 +14,7 @@ Create a folder directory for each dataset using the dataset name. The dataset f
 4. **SLRfinder_functions.R**: the R script for running SLRfinder, available on Github
 <br/> </br>
 
-If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example of filtering and LD estimation.  
+If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example unix script for filtering and LD estimation.  
 ```
 ## create folders to save the output of processed data of each chromosome
 mkdir a15m75 GenoLD.snp100
@@ -39,7 +39,7 @@ If the dataset is small (e.g., RADseq data), all chromosomes can be processed to
 populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m75
 ```
-The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be input in the R codes below. 
+The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be used in the R codes below. 
 <br/> </br>
 
 **Step1: get LD clusters**
@@ -94,12 +94,13 @@ for (i in 1:nrow(LG)) {
 
 #range(data_cls$nSNPs)
 data_cls$SNPs = apply(data_cls, 1, function(cl){ paste0(cl$chr, "_", cl$SNPs)})
+print(paste0("total number of LD clusters: ", nrow(data_cls)))
 saveRDS(data_cls, file="data_cls.rds")
 setwd("../")
 ```
 This script generates a parameter-named folder (e.g., LD8.5cl20) which contains a file named data_cls.rds (the LD clusters identified by this parameter), and a subfolder named whitelist which contains positions (by chromosome) of the SNPs included in these LD clusters. These SNPs were then extracted from the filtered vcf files and output in the 012 format using vcftools: 
 ```
-# This unix script can be modified into an R script if VCFtools is installed on the local computer
+# The unix script below can be modified into an R script if VCFtools is installed on the local computer
 # run this script within the dataset folder
 
 module load vcftools
