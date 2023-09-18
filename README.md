@@ -7,31 +7,47 @@ Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, pa
 
 **Step0: generate the input vcf dataset and the LD edge list**
 
-Create a directory for each dataset using the dataset name. The dataset folder should contain a file (dataset.csv) of the sample information, including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population".
+Create a directory for each dataset using the dataset name. The dataset folder should contain:
+1. the SNP genotypes in the vcf format (mydata.vcf or mydata.vcf.gz) 
+2. the sample information file (dataset.csv), including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population"
+3. the genome information (reference.list), including two columns of the contig/scaffold ID in the reference genome and the corresponding chromosome names that are more informative (e.g., LGx). 
 <br/> </br>
 
-The vcf dataset can be filtered using VCFtools, e.g.:
+If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example of filtering and LD estimation.  
 ```
-$ vcftools --vcf myinput.vcf \
---minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 \
---recode --recode-INFO-all --out myoutput
+## create folders to save the output of processed data of each chromosome
+mkdir a15m75 GenoLD.snp100
+
+## run below in an array job
+chr=$(sed -n ${SLURM_ARRAY_TASK_ID}p reference.list | awk '{print $1}')
+lg=$(sed -n ${SLURM_ARRAY_TASK_ID}p reference.list | awk '{print $2}')
+ind=mydata
+
+## filtering 
+bcftools view --regions ${chr} ${ind}.vcf.gz \
+| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all -c \
+| bcftools view -Oz -o ./a15m75/${ind}_${lg}_a15m75.vcf.gz
+
+## LD calculation
+vcftools --gzvcf ./a15m75/${ind}_${lg}_a15m75.vcf.gz \
+--geno-r2 --ld-window 100 \
+--out ./GenoLD.snp100/${ind}_${lg}_a15m75
 ```
-or using popoulations in Stacks, e.g.:
+<br/> </br>
+
+If the dataset is small (e.g., RADseq data), all chromosomes can be processed together. Filtered can be done popoulations in Stacks, e.g.:
 ```
-$ populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
+populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
+vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m75
 ```
-Then LD is calculated using the retained SNPs in VCFtools. The filtering and LD estimation can be down on all SNPs combined or separately on each chromosome if the dataset is too large.
-```
-$ vcftools --vcf mydata.vcf --geno-r2 --ld-window 100 --out mydata
-```
-The output LD edge list (mydata.geno.ld) will be saved in the dataset folder and used in the R codes below. 
+<br/> </br>
+
+The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be input in the R codes below. 
 <br/> </br>
 
 **Step1: get LD clusters**
 
-Run the R codes below in the dataset folder which should contain: the sample information (mydata.csv), the LD edge list (mydata.geno.ld), and the genome information (a file named reference) where colum1 has the chr ID in the vcf file (usually the contig names in the reference genome) and colum2 the corresponding chromosome names that are more informative (e.g., LGx). 
-
-If using big data (such as whole-genome resequencing), the script can be made faster by running on each chr in parallel (see notes below).
+Run the R codes below in the dataset folder. If using large datasets (such as whole-genome resequencing), the script can be made faster by running on each chr in parallel (rather than in loops or combined as in the script below). 
 ```
 ####### input data information #######
 ## dataset name
@@ -40,8 +56,8 @@ mydata = "mydata"
 # sample information 
 sif = read.csv(paste0(mydata, ".csv"))
 # genome information (contig names in column1, chromosome names in column2)
-LG = read.table("reference", header = F)
-names(LG) = c("chr", "CHR")
+LG = read.table("reference.list", header = F)
+names(LG) = c("chr", "lg")
 
 ## set parameters
 # default for whole-genome sequencing data
@@ -51,11 +67,11 @@ min.cl.size=20
 # min_LD=0.2
 # min.cl.size=5
 
-geno.LD <- read.table(paste0(mydata, ".geno.ld"), header = T)
-names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
-# If using big data: skip the above two lines and split the edge list by chr: mydata_${chr}.geno.ld
-
 source("SLRfinder_functions.R")
+
+## if all chr combined 
+# geno.LD <- read.table(paste0(mydata, "_a15m75.geno.ld"), header = T)
+# names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
 
 ####### step 1. get LD clusters #######
 system(paste0("mkdir ", "LD", min_LD*10, "cl", min.cl.size))
@@ -64,17 +80,18 @@ system(paste0("mkdir ", "whitelist"))
 
 data_cls <- NULL
 for (i in 1:nrow(LG)) {
-  chr = LG[i, "chr"]
+  lg = LG[i, "lg"]
 
-  data = geno.LD[geno.LD$CHR == chr, ]
-  ## if using big data and *geno.ld by chr, skip the above line and run below
-  # data = read.table(paste0("../", mydata, "_", chr, ".geno.ld"), header = T)
-  # names(data) = c("CHR", "from", "to", "N_INDV", "r2")
+  data = read.table(paste0("./GenoLD.snp100/", mydata, "_", lg, "_a15m75.geno.ld"), header = T)
+  names(data) = c("CHR", "from", "to", "N_INDV", "r2")
+
+  # if all chr combined 
+  # data = geno.LD[geno.LD$CHR == LG[i, "chr"], ]
 
   out = get_single_LD_cluster(data, min_LD = min_LD, min.cl.size=min.cl.size)
   position = as.data.frame(unlist(out$SNPs))
-  position = cbind(rep(chr, sum(out$nSNPs)), position)
-  write.table(position, paste0("./whitelist/position.LG", i, ".list"), sep="\t", quote = F, row.names = F)
+  position = cbind(rep(lg, sum(out$nSNPs)), position)
+  write.table(position, paste0("./whitelist/position.", lg, ".list"), sep="\t", quote = F, row.names = F)
   data_cls <- rbind(data_cls, out)
 }
 
@@ -83,13 +100,14 @@ data_cls$SNPs = apply(data_cls, 1, function(cl){ paste0(cl$chr, "_", cl$SNPs)})
 saveRDS(data_cls, file="data_cls.rds")
 setwd("../")
 ```
-The output is a parameter-named folder (e.g., LD8.5cl20) which contains a file named data_cls.rds (the LD clusters identified by this parameter), and a subfolder named whitelist which contains positions (by chromosome) of the SNPs included in these LD clusters. These SNPs were then extracted from the filtered vcf files and output in the 012 format using vcftools: 
+This script generates a parameter-named folder (e.g., LD8.5cl20) which contains a file named data_cls.rds (the LD clusters identified by this parameter), and a subfolder named whitelist which contains positions (by chromosome) of the SNPs included in these LD clusters. These SNPs were then extracted from the filtered vcf files and output in the 012 format using vcftools: 
 ```
 # This unix script can be modified into an R script if VCFtools is installed on the local computer
 # run this script within the dataset folder
 
 module load vcftools
 param=LD8.5cl20
+ind=mydata
 
 cd ${param}
 mkdir file012
@@ -97,10 +115,10 @@ mkdir file012
 ## loop by chromosome (here total 21 chromosomes)
 for chr in {1..21}
 do
-vcftools --vcf ../mydata.vcf \
+vcftools --gzvcf ../a15m75/${ind}_LG${chr}_a15m75.vcf.gz \
 --positions ./whitelist/position.LG${chr}.list \
 --012 \
---out ./file012/LG${chr}_a15m75_LD${LD}cl${cl}
+--out ./file012/${ind}_LG${chr}_a15m75_LD${LD}cl${cl}
 done
 
 cd ../
@@ -130,7 +148,7 @@ setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 ## load the data of LD clusters generated in step 1
 data_cls <- readRDS("data_cls.rds")
 
-source("SLRfinder_functions.R")
+source("../SLRfinder_functions.R")
 
 ####### continue after the R script in step 1 #######
 files <- paste0("./file012/", list.files("file012"))
@@ -178,9 +196,5 @@ PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="Run", sort=F)
 
 candidates = merge(candidates, LG, by="chr")
 write.csv(candidates[, c("chr", "CHR", "region", "p_gc_adj", "nSNPs", "rank",  "nSNPs_rank", "R2_rank", "Dext_max_rank", "chi2_rank")], paste0(mydata, "_can.csv"), row.names = F)
-
-
 ```
-
-
 
