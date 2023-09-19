@@ -25,12 +25,12 @@ lg=$(sed -n ${SLURM_ARRAY_TASK_ID}p reference.list | awk '{print $2}')
 ind=mydata
 
 ## filtering 
-bcftools view --regions ${chr} ${ind}.vcf.gz \
-| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all -c \
-| bcftools view -Oz -o ./a15m75/${ind}_${lg}_a15m75.vcf.gz
+vcftools --gzvcf ${ind}.vcf.gz \
+--chr ${chr} --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 \
+--recode --recode-INFO-all --out a15m75/${ind}_${lg}_a15m75
 
 ## LD calculation
-vcftools --gzvcf ./a15m75/${ind}_${lg}_a15m75.vcf.gz \
+vcftools --gzvcf ./a15m75/${ind}_${lg}_a15m75.recode.vcf \
 --geno-r2 --ld-window 100 \
 --out ./GenoLD.snp100/${ind}_${lg}_a15m75
 ```
@@ -56,8 +56,7 @@ sif = read.csv(paste0(mydata, ".csv"))
 LG = read.table("reference.list", header = F)
 names(LG) = c("chr", "lg")
 
-## set parameters
-# default for whole-genome sequencing data
+# default parameters for whole-genome sequencing data
 min_LD=0.85
 min.cl.size=20 
 # use loser thresholds for RADseq data which are much sparser
