@@ -18,3 +18,50 @@ bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
 | vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all -c \
 | bcftools view -Oz -o ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz
 
+
+
+########################## chum salmon RADseq data ##########################
+Data were generated in McKinney et al. 2020. Raw RADseq data are downloaded from NCBI BioProject PRJNA611968. 
+
+module load sratoolkit
+sra=$(sed -n ${SLURM_ARRAY_TASK_ID}p PRJNA611968_SraAccList)
+prefetch ${sra}
+mv ${sra}/${sra}.sra ./
+rmdir ${sra}
+fasterq-dump --split-files ${sra}.sra
+
+
+## map to the reference genome
+module load bwa
+bwa index GCF_023373465.1_Oket_V2_genomic.fna
+
+module load samtools
+
+PL=IlluminaHiseq4000
+ind=$(sed -n ${SLURM_ARRAY_TASK_ID}p PRJNA611968_SraAccList)
+
+bwa mem -t8 -M -P \
+-R "@RG\tID:${ind}\tSM:${ind}\tPL:${PL}\tLB:${ind}\tPU:1" \
+../GCF_023373465.1/GCF_023373465.1_Oket_V2_genomic.fna \
+../raw/FASTQ/${ind}.fastq \
+| samtools view -F4 -h -b -o ${ind}.bam
+
+samtools sort -n ${ind}.bam -O bam -o ${ind}.nsort.bam
+samtools fixmate -@ 8 -m ${ind}.nsort.bam ${ind}.fixmate.bam
+rm ${ind}.bam
+rm ${ind}.nsort.bam
+samtools sort ${ind}.fixmate.bam -O bam -o ${ind}.fixmate.sort.bam
+rm ${ind}.fixmate.bam
+samtools index ${ind}.fixmate.sort.bam
+samtools markdup ${ind}.fixmate.sort.bam ${ind}.markdup.bam
+rm ${ind}.fixmate.sort.bam
+rm ${ind}.fixmate.sort.bam.bai
+samtools index ${ind}.markdup.bam
+samtools flagstat ${ind}.markdup.bam > flagstat/${ind}.markdup.bam.flagstat
+
+
+## genotype
+module load stacks/2.65
+ref_map.pl -T 8 --samples ../bwa --popmap ../popmap -o ./ 
+populations -t 8 -P ./ -M ../popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
+
