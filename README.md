@@ -82,7 +82,7 @@ data_cls <- NULL
 for (i in 1:nrow(LG)) {
   lg = LG[i, "lg"]
 
-  data = read.table(paste0("./GenoLD.snp100/", mydata, "_", lg, "_a15m75.geno.ld"), header = T)
+  data = read.table(paste0("../GenoLD.snp100/", mydata, "_", lg, "_a15m75.geno.ld"), header = T)
   names(data) = c("CHR", "from", "to", "N_INDV", "r2")
 
   # if all chr combined 
