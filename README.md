@@ -64,7 +64,6 @@ min.cl.size=20
 source("SLRfinder_functions.R")
 ```
 <br/> </br>
-
 Use the LD edge list and the parameters set above to identify LD clusters. This script processes the input data by chromosome so that it can be faster to run in parallel if using large datasets (such as whole-genome resequencing). It can also be easily modified to process all data combined. This script will generate: 
 1. a parameter-named folder (e.g., **LD8.5cl20**) that contains the output of the identified LD clusters (**data_cls.rds**)
 2. a subfolder (**LD8.5cl20/whitelist**) that contains positions (by chromosome) of the SNPs included in the identified LD clusters
@@ -126,7 +125,6 @@ for (i in 1:nrow(LG)){
 # cd ../
 ```
 <br/> </br>
-
 **Step2: identify candidate SLRs and plot the results**
 
 Run the R script below within the dataset folder. 
