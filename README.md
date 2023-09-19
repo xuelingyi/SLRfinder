@@ -14,7 +14,7 @@ Create a folder directory for each dataset using the dataset name. The dataset f
 4. **SLRfinder_functions.R**: the R script for running SLRfinder, available on Github
 <br/> </br>
 
-If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example unix script for filtering and LD estimation.  
+If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example unix script for filtering and LD estimation. This script will save the filtered vcf files in the folder **a15m75** and save the LD edge lists in the folder **GenoLD.snp100**
 ```
 ## create folders to save the output of processed data of each chromosome
 mkdir a15m75 GenoLD.snp100
