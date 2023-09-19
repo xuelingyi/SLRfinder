@@ -41,9 +41,9 @@ vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m7
 ```
 The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be used in the R codes below. 
 <br/> </br>
-<br/> </br>
+**Step1: get LD clusters**
 
-Run the R scripts below in the dataset folder. The scripts are divided into sections in this manual but can be readily combined to process the whole dataset. If using large datasets (such as whole-genome resequencing), the script can be made faster by running on each chr in parallel (rather than in loops or combined as in the script below). 
+Run the R scripts below in the dataset folder. The scripts are divided into sections in this manual but can be readily combined to process the whole dataset.  
 ```
 ########### read the data information ###########
 ## dataset name
@@ -64,8 +64,11 @@ min.cl.size=20
 source("SLRfinder_functions.R")
 ```
 <br/> </br>
-**Step1: get LD clusters**
-Use the LD edge list and the parameters set above to identify LD clusters. This script generates a parameter-named folder (e.g., LD8.5cl20) which contains information on the identified LD clusters (data_cls.rds), and a subfolder (./whitelist) that contains positions (by chromosome) of the SNPs included in identified LD clusters. Then these SNPs were extracted from the filtered vcf files and output in the 012 format using vcftools. 
+
+Use the LD edge list and the parameters set above to identify LD clusters. This script processes the input data by chromosome so that it can be faster to run in parallel if using large datasets (such as whole-genome resequencing). It can also be easily modified to process all data combined. This script will generate: 
+1. a parameter-named folder (e.g., **LD8.5cl20**) that contains the output of the identified LD clusters (**data_cls.rds**)
+2. a subfolder (**LD8.5cl20/whitelist**) that contains positions (by chromosome) of the SNPs included in the identified LD clusters
+3. a subfolder (**LD8.5cl20/file012**) that contains the .012 files of the SNPs (by chromosome) included in the LD clusters 
 ```
 ########## step 1. get LD clusters ##########
 ## if all chr combined 
@@ -100,52 +103,28 @@ saveRDS(data_cls, file="data_cls.rds")
 #setwd("../")
 
 system("mkdir file012")
+## note: this requires that vcftools has been installed in the local environment
+for (i in 1:nrow(LG)){
+    lg = LG[i, "LG"]
+    system(paste0("vcftools --gzvcf ../a15m75/", mydata, "_", lg,
+                  "_a15m75.recode.vcf --positions ./whitelist/position.", lg, ".list",
+                  "--012 --out ./file012/", mydata, "_", lg, "_a15m75_LD", min_LD, "cl", min.cl.size))
+))
 
-
-
-
-
-module load vcftools
-param=LD8.5cl20
-ind=mydata
-
-cd ${param}
-mkdir file012
-
+# The above vcftools script can also be done in unix using the code below
+# module load vcftools
+# ind=mydata
+# param=LD8.5cl20
+# cd ${param}
+# mkdir file012
 ## loop by chromosome (here total 21 chromosomes)
-for chr in {1..21}
-do
-vcftools --gzvcf ../a15m75/${ind}_LG${chr}_a15m75.vcf.gz \
---positions ./whitelist/position.LG${chr}.list \
---012 \
---out ./file012/${ind}_LG${chr}_a15m75_LD${LD}cl${cl}
-done
-
-cd ../
-
-
-# The unix script below can be modified into an R script if VCFtools is installed on the local computer
-# run this script within the dataset folder
-
-module load vcftools
-param=LD8.5cl20
-ind=mydata
-
-cd ${param}
-mkdir file012
-
-## loop by chromosome (here total 21 chromosomes)
-for chr in {1..21}
-do
-vcftools --gzvcf ../a15m75/${ind}_LG${chr}_a15m75.vcf.gz \
---positions ./whitelist/position.LG${chr}.list \
---012 \
---out ./file012/${ind}_LG${chr}_a15m75_LD${LD}cl${cl}
-done
-
-cd ../
+# for chr in {1..21}
+# do
+# vcftools --gzvcf ../a15m75/${ind}_LG${chr}_a15m75.vcf.gz --positions ./whitelist/position.LG${chr}.list \
+# --012 --out ./file012/${ind}_LG${chr}_a15m75_LD${LD}cl${cl}
+# done
+# cd ../
 ```
-This script will generate in the parameter-named folder another subfolder named file012 containing the vcf files (by chromosome) of the SNPs included in the LD clusters.  
 <br/> </br>
 
 **Step2: identify candidate SLRs and plot the results**
