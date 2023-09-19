@@ -41,18 +41,16 @@ vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m7
 ```
 The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be used in the R codes below. 
 <br/> </br>
+<br/> </br>
 
-**Step1: get LD clusters**
-
-Run the R codes below in the dataset folder. If using large datasets (such as whole-genome resequencing), the script can be made faster by running on each chr in parallel (rather than in loops or combined as in the script below). 
+Run the R scripts below in the dataset folder. The scripts are divided into sections in this manual but can be readily combined to process the whole dataset. If using large datasets (such as whole-genome resequencing), the script can be made faster by running on each chr in parallel (rather than in loops or combined as in the script below). 
 ```
-####### input data information #######
+########### read the data information ###########
 ## dataset name
 mydata = "mydata"
 
-# sample information 
 sif = read.csv(paste0(mydata, ".csv"))
-# genome information (contig names in column1, chromosome names in column2)
+# get genome information (contig names in column1, chromosome names in column2)
 LG = read.table("reference.list", header = F)
 names(LG) = c("chr", "lg")
 
@@ -64,12 +62,16 @@ min.cl.size=20
 # min.cl.size=5
 
 source("SLRfinder_functions.R")
-
+```
+<br/> </br>
+**Step1: get LD clusters**
+Use the LD edge list and the parameters set above to identify LD clusters. This script generates a parameter-named folder (e.g., LD8.5cl20) which contains information on the identified LD clusters (data_cls.rds), and a subfolder (./whitelist) that contains positions (by chromosome) of the SNPs included in identified LD clusters. Then these SNPs were extracted from the filtered vcf files and output in the 012 format using vcftools. 
+```
+########## step 1. get LD clusters ##########
 ## if all chr combined 
 # geno.LD <- read.table(paste0(mydata, "_a15m75.geno.ld"), header = T)
 # names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
 
-####### step 1. get LD clusters #######
 system(paste0("mkdir ", "LD", min_LD*10, "cl", min.cl.size))
 setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 system(paste0("mkdir ", "whitelist"))
@@ -95,10 +97,33 @@ for (i in 1:nrow(LG)) {
 data_cls$SNPs = apply(data_cls, 1, function(cl){ paste0(cl$chr, "_", cl$SNPs)})
 print(paste0("total number of LD clusters: ", nrow(data_cls)))
 saveRDS(data_cls, file="data_cls.rds")
-setwd("../")
-```
-This script generates a parameter-named folder (e.g., LD8.5cl20) which contains a file named data_cls.rds (the LD clusters identified by this parameter), and a subfolder named whitelist which contains positions (by chromosome) of the SNPs included in these LD clusters. These SNPs were then extracted from the filtered vcf files and output in the 012 format using vcftools: 
-```
+#setwd("../")
+
+system("mkdir file012")
+
+
+
+
+
+module load vcftools
+param=LD8.5cl20
+ind=mydata
+
+cd ${param}
+mkdir file012
+
+## loop by chromosome (here total 21 chromosomes)
+for chr in {1..21}
+do
+vcftools --gzvcf ../a15m75/${ind}_LG${chr}_a15m75.vcf.gz \
+--positions ./whitelist/position.LG${chr}.list \
+--012 \
+--out ./file012/${ind}_LG${chr}_a15m75_LD${LD}cl${cl}
+done
+
+cd ../
+
+
 # The unix script below can be modified into an R script if VCFtools is installed on the local computer
 # run this script within the dataset folder
 
