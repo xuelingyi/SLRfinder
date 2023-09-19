@@ -199,21 +199,23 @@ saveRDS(cand_regions, "cand_regions.rds")
 alpha=0.05
 list2env(cand_regions, globalenv())
 lambda <- lm(obs~exp+0, cand_regions$qq_data)$coefficients
-qq_data$col=rep("steelblue", nrow(data_out))
-qq_data$col[which(data_out$p_gc_adj<alpha)] <- "indianred"
+qq_data$col=rep("grey40", nrow(data_out))
+qq_data$col[which(data_out$p_gc_adj<alpha)] <- "#ff9727"
 PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="SampleID", sort=F)
 
 candidates = merge(candidates, LG, by="chr")
 write.csv(candidates[, c("chr", "lg", "region", "p_gc_adj", "nSNPs", "rank",  "nSNPs_rank", "R2_rank", "Dext_max_rank", "chi2_rank")], paste0(mydata, "_can.csv"), row.names = F)
 
+## the script below will print all results (the QQ-plot and all significant candidates or the five top-ranked LD clusters) into one PDF file, with one plot per page
 pdf(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".pdf"), width = 6, height = 4)
 
 ggplot(qq_data, aes(x=exp, y=obs)) + 
   geom_point(col=qq_data$col) + theme_bw() + theme(legend.position = "none") +
-  labs(title=paste0("QQ-plot\n", "lambda=", round(lambda,2)),
+  labs(title=paste0("min_LD=", min_LD, ", min.cl.size=", min.cl.size, "\n",
+                    "lambda=", round(lambda,2)),
        x="Expected -log10(P)", y="Observed -log10(P)") +
   geom_abline(slope = 1, intercept = 0, linewidth=0.5) +
-  geom_smooth(method = "lm", aes(x=exp, y=obs+0), col="salmon", linewidth=0.5)
+  geom_smooth(method = "lm", aes(x=exp, y=obs+0), col="#ff9727", linewidth=0.5)
 
 i=0
 for(r in unique(PCA_het_data$region)) {
@@ -222,11 +224,12 @@ for(r in unique(PCA_het_data$region)) {
   label = unlist(strsplit(unique(pca$label), split=" | ", fixed = T))
   chr = unlist(strsplit(label[1], ":"))[1]
   lg = LG[LG$chr == chr, "lg"]
-  title = paste0(lg,  "\n",
-                 label[1], "\n",
+
+  ## replace the original contig name with the more informative chromosome ID (LGx)
+  title = paste0(sub(chr, lg, label[1]), "\n",
                  label[2], " ", label[3])  
-  #paste0("pop.plot", i), 
-  #assign
+
+  ## color individuals by population; can color by sex if known
   print (ggplot(pca, aes(PC_scaled,Het)) +
            geom_smooth(method = "lm",se=FALSE, col="black") +
            geom_point(aes(x=PC_scaled, y=Het, color=Population), alpha=0.6, size=2.5) +
@@ -237,6 +240,7 @@ for(r in unique(PCA_het_data$region)) {
   
   i=i+1
 }
+i # print the number of candidates
 dev.off()
 
 ```
