@@ -41,6 +41,7 @@ vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m7
 ```
 The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be used in the R codes below. 
 <br/> </br>
+
 **Step1: get LD clusters**
 
 Run the R scripts below in the dataset folder. The scripts are divided into sections in this manual but can be readily combined to process the whole dataset.  
@@ -124,6 +125,7 @@ for (i in 1:nrow(LG)){
 # cd ../
 ```
 <br/> </br>
+
 **Step2: identify candidate SLRs and plot the results**
 
 Run the R script below within the dataset folder. 
