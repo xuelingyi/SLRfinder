@@ -51,6 +51,7 @@ For the impatient, SLRfinder can be readily applied to the prepared data by savi
 source("SLRfinder_scripts.R")
 ```
 This script will ask you to set the input dataset name (e.g., mydata), the SLRfinder parameters (min_LD and min.cl.size, see below for details), and the number of cores to use (using more cores can speed up the step2 estimation, but do not use more cores than available!).
+
 <br>
 
 ## Detailed tutorial
@@ -79,7 +80,6 @@ min.cl.size=20
 
 source("SLRfinder_functions.R")
 ```
-<br/> </br>
 
 **Step1: get LD clusters**
 
@@ -142,7 +142,6 @@ for (i in 1:nrow(LG)){
 # done
 # cd ../
 ```
-<br/> </br>
 
 **Step2: identify candidate SLRs and plot the results**
 
