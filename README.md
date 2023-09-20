@@ -12,9 +12,8 @@ Create a folder directory for each dataset using the dataset name. The dataset f
 2. **dataset.csv**: the sample information file, including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population"
 3. **reference.list**, the genome information including two space-delimited columns: column1 is the contig/scaffold ID in the reference genome, column2 is the preferred chromosome names that may be more informative (e.g., LGx). The two columns can be identical if the contigs have already been renamed as the human-informative version in the vcf file.
 4. **SLRfinder_functions.R**: the R script for running SLRfinder, available on Github
-<br/> </br>
 
-If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example unix script for filtering and LD estimation. This script will save the filtered vcf files in the folder **a15m75** and save the LD edge lists in the folder **GenoLD.snp100**
+If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example unix script for filtering and LD estimation. This script will save the filtered vcf files in the folder **a15m75** and save the LD edge lists (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) in the folder **GenoLD.snp100**
 ```
 ## create folders to save the output of processed data of each chromosome
 mkdir a15m75 GenoLD.snp100
@@ -39,14 +38,12 @@ If the dataset is small (e.g., RADseq data), all chromosomes can be processed to
 populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m75
 ```
-The output LD edge list (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) will be used in the R codes below. 
-<br/> </br>
 
-**Step1: get LD clusters**
+**read data information**
 
-Run the R scripts below in the dataset folder. The scripts are divided into sections in this manual but can be readily combined to process the whole dataset.  
+Run the R scripts below in the dataset folder. The scripts are divided into sections in this manual but can be readily combined to process the whole dataset. The data information is needed to run the following sections.
 ```
-########### read the data information ###########
+########### read data information ###########
 ## dataset name
 mydata = "mydata"
 
@@ -64,6 +61,10 @@ min.cl.size=20
 
 source("SLRfinder_functions.R")
 ```
+<br/> </br>
+
+**Step1: get LD clusters**
+
 Use the LD edge list and the parameters set above to identify LD clusters. This script processes the input data by chromosome so that it can be faster to run in parallel if using large datasets (such as whole-genome resequencing). It can also be easily modified to process all data combined. This script will generate: 
 1. a parameter-named folder (e.g., **LD8.5cl20**) that contains the output of the identified LD clusters (**data_cls.rds**)
 2. a subfolder (**LD8.5cl20/whitelist**) that contains positions (by chromosome) of the SNPs included in the identified LD clusters
@@ -126,10 +127,15 @@ for (i in 1:nrow(LG)){
 
 **Step2: identify candidate SLRs and plot the results**
 
-Run the R script below within the dataset folder. 
+This script will get the 012 genotypes of all LD clusters and rank them using four (default) criteria: 
+1. nSNPs: the number of SNPs in this cluster. The true SLR cluster should have more SNPs. 
+2. R2: the correlation coefficient between heterozygosity and PC1 scores. The true SLR cluster should have a higher R2. 
+3. Dext_max: on the heterozygosity~PC1 plot, the Euclidean distance between each dot and its closer corner ((0,0) or (1,1)) divided by half of the distance between the corners. The true SLR cluster should have a smaller Dext_max (i.e., denser clustering). 
+4. chi2: the chi-square value in the goodness of fit test on the even split of individuals into two clusters in each population. The true SLR cluster should have an even split of individuals into the two clusters representing males and females, thus a smaller chi2 (not different from the null expectation). 
+
 ```
 ####### step 2. identify SLR candidates #######
-## if starting R from new: the data information needs to be read in again 
+## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 
 files <- paste0("./file012/", list.files("file012"))
