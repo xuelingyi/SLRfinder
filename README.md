@@ -1,23 +1,21 @@
 # SLRfinder
 
-This method is aimed to identify candidate sex-linked regions (SLRs) based on linkage and heterozygosity using SNP genotypes. Individual sexes can be used to further validate the candidate regions but are not required for this method to identify SLR candidates. The method is mostly written in R scripts and can be readily applied to any vcf datasets.  
+This method is aimed at identifying candidate sex-linked regions (SLRs) based on heterozygosity and linkage disequilibrium (LD) using SNP genotypes. Individual sexes can be used to further validate the identified SLR regions but are not required for this method to detect candidates. The method is mostly written in R scripts and can be readily applied to vcf datasets.  
 
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
 
 ## Input files
-Create a directory for each dataset using the dataset name. The dataset folder should contain:
-1. **dataset.csv**: the sample information file, including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population"
-2. **reference.list**, the genome information including two space-delimited columns: column1 is the contig/scaffold ID in the reference genome, column2 is the preferred chromosome names that may be more informative (e.g., LGx). The two columns can be identical if the contigs have already been renamed as the human-informative version in the vcf file.
+Create a directory for each dataset using the dataset name (e.g., mydata). This dataset folder should contain:
+1. **mydata.csv**: the sample information file named after the dataset. This should include at least two columns named "SampleID" (same as names in the sequencing data) and "Population"
+2. **reference.list**: the genome information including two space-delimited columns: column1 is the contig/scaffold ID in the reference genome, column2 is the more informative chromosome names (e.g., LGx). The two columns can be identical if the contigs have already been renamed into the human-informative version in the vcf file. If using the whole-genome resequencing (WGS) data, the unassembled contigs may not be necessary to be included in the analyses and do not need to be listed in this file. 
 3. **SLRfinder_functions.R**: the R script for running SLRfinder, available on Github
-4. **./a15m75**: the folder containing the filtered vcf files (can be generated using the step0_script below)
-5. **./GenoLD.snp100**: the folder containing the LD edge lists estimated using the filtered vcf files (can be generated using the step0_script below)
+4. **./a15m75**: a folder containing the filtered vcf files (can be generated using the step0_script below)
+5. **./GenoLD.snp100**: a folder containing the LD edge lists estimated using the filtered vcf files (can be generated using the step0_script below)
 <br>
 
 **Step0: prepare the input vcf datasets and the LD edge lists**
 
-This is an example **unix** script (can be adapted to R scripts) for vcf filtering and LD estimation. If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). 
-
-Run the following scripts in the dataset folder that should contain a vcf file **mydata.vcf** of the unfiltered SNP genotypes. This script will generate a folder **a15m75** to save the filtered vcf files, and a folder **GenoLD.snp100** to save the LD edge lists (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld).
+This is an example **unix** script (can be adapted to R scripts) for vcf filtering and LD estimation. If using large datasets (e.g., WGS), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes) or by contig/scaffold (if using low-quality genomes). Run the following scripts in the dataset folder that should also contain the unfiltered SNP genotypes (**mydata.vcf**). This script will generate a folder **a15m75** to save the filtered vcf files, and a folder **GenoLD.snp100** to save the LD edge lists (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld).
 ```
 ## create folders to save the output of processed data of each chromosome
 mkdir a15m75 GenoLD.snp100
@@ -45,21 +43,21 @@ vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m7
 <br>
 
 ## Quick Start
-For the impatient, SLRfinder can be readily applied to the prepared data by saving the R script SLRfinder_scripts.R in the dataset folder and run the R code below:
+SLRfinder can be readily applied to the prepared data by saving the R script **SLRfinder_scripts.R** in the dataset folder and run the R code below:
 ```
 ## change the working directory to the dataset folder
 source("SLRfinder_scripts.R")
 ```
-This script will ask you to set the input dataset name (e.g., mydata), the SLRfinder parameters (min_LD and min.cl.size, see below for details), and the number of cores to use (using more cores can speed up the step2 estimation, but do not use more cores than available!).
+This script will ask you to set the input dataset name (e.g., mydata), the SLRfinder parameters (min_LD and min.cl.size, see below for details), and the number of cores to use (do not use more cores than available!).
 
 <br>
 
 ## Detailed tutorial
-Below is a more detailed tutorial that should be easier to follow step by step. Basically, the SLRfinder_scripts.R is divided into sections with more detailed explanations. 
+Below is a more detailed tutorial that can be followed step by step. Basically, the script SLRfinder_scripts.R is divided into sections with more detailed explanations on each section. 
 
 **read data information**
 
-The basic information needed for SLRfinder to process the data. 
+The basic information neededs to be read in for SLRfinder to process the data. 
 ```
 ## dataset name
 mydata = "mydata"
@@ -83,10 +81,10 @@ source("SLRfinder_functions.R")
 
 **Step1: get LD clusters**
 
-Use the LD edge list and the parameters set above to identify LD clusters. This script processes the input data by chromosome so that it can be faster to run in parallel if using large datasets (such as whole-genome resequencing). It can also be easily modified to process all data combined. This script will generate: 
-1. a parameter-named folder (e.g., **LD8.5cl20**) that contains the output of the identified LD clusters (**data_cls.rds**)
+Use the LD edge list and the parameters set above to identify LD clusters. This script processes the input data by chromosome (so that it can be faster when processing WGS data), but it can also be easily modified to process all data combined (see the notes in the codes below). This script will generate: 
+1. a parameter-named folder (e.g., **LD8.5cl20**) that contains information of the identified LD clusters (**data_cls.rds**)
 2. a subfolder (**LD8.5cl20/whitelist**) that contains positions (by chromosome) of the SNPs included in the identified LD clusters
-3. a subfolder (**LD8.5cl20/file012**) that contains the .012 files of the SNPs (by chromosome) included in the LD clusters
+3. a subfolder (**LD8.5cl20/file012**) that contains the .012 genotypes of the SNPs (by chromosome) included in the LD clusters
 
 This step can take a while so it might be good to use more cores.
 ```
