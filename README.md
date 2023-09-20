@@ -104,10 +104,8 @@ saveRDS(data_cls, file="data_cls.rds")
 system("mkdir file012")
 ## note: this requires that vcftools has been installed in the local environment
 for (i in 1:nrow(LG)){
-    lg = LG[i, "LG"]
-    system(paste0("vcftools --gzvcf ../a15m75/", mydata, "_", lg,
-                  "_a15m75.recode.vcf --positions ./whitelist/position.", lg, ".list",
-                  "--012 --out ./file012/", mydata, "_", lg, "_a15m75_LD", min_LD, "cl", min.cl.size))
+  lg = LG[i, "lg"]
+  system(paste0("vcftools --gzvcf ../a15m75/", mydata, "_", lg, "_a15m75.recode.vcf --positions ./whitelist/position.", lg, ".list", " --012 --out ./file012/", mydata, "_", lg, "_a15m75_LD", min_LD, "cl", min.cl.size))
 }
 
 # The above vcftools script can also be done in unix using the code below
