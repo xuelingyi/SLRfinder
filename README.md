@@ -29,7 +29,7 @@ vcftools --gzvcf ${ind}.vcf.gz \
 --recode --recode-INFO-all --out a15m75/${ind}_${lg}_a15m75
 
 ## LD calculation
-vcftools --gzvcf ./a15m75/${ind}_${lg}_a15m75.recode.vcf \
+vcftools --vcf ./a15m75/${ind}_${lg}_a15m75.recode.vcf \
 --geno-r2 --ld-window 100 \
 --out ./GenoLD.snp100/${ind}_${lg}_a15m75
 ```
