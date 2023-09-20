@@ -3,20 +3,19 @@
 This method is aimed to identify candidate sex-linked regions (SLRs) based on linkage and heterozygosity using SNP genotypes. Individual sexes can be used to further validate the candidate regions but are not required for this method to identify SLR candidates. The method is mostly written in R scripts and can be readily applied to any vcf datasets.  
 
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
-<br/> </br>
 
+## Input files
+Create a folder directory for each dataset using the dataset name. The dataset folder should contain:
+1. **dataset.csv**: the sample information file, including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population"
+2. **reference.list**, the genome information including two space-delimited columns: column1 is the contig/scaffold ID in the reference genome, column2 is the preferred chromosome names that may be more informative (e.g., LGx). The two columns can be identical if the contigs have already been renamed as the human-informative version in the vcf file.
+3. **SLRfinder_functions.R**: the R script for running SLRfinder, available on Github
+4. **mydata.vcf** (or mydata.vcf.gz): the SNP genotypes in the vcf format. 
+Run the following scripts in the dataset folder. 
 <br>
 
-Create a folder directory for each dataset using the dataset name. The dataset folder should contain:
-1. **mydata.vcf** (or mydata.vcf.gz): the SNP genotypes in the vcf format 
-2. **dataset.csv**: the sample information file, including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population"
-3. **reference.list**, the genome information including two space-delimited columns: column1 is the contig/scaffold ID in the reference genome, column2 is the preferred chromosome names that may be more informative (e.g., LGx). The two columns can be identical if the contigs have already been renamed as the human-informative version in the vcf file.
-4. **SLRfinder_functions.R**: the R script for running SLRfinder, available on Github
+**Step0: prepare the input vcf datasets and the LD edge lists**
 
-
-**Step0: generate the input vcf dataset and the LD edge list**
-
-If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example unix script for filtering and LD estimation. This script will save the filtered vcf files in the folder **a15m75** and save the LD edge lists (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) in the folder **GenoLD.snp100**
+If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example unix script (can be adapted to R scripts) for filtering and LD estimation. This script will generate a folder **a15m75** to save the filtered vcf files, and a folder **GenoLD.snp100** to save the LD edge lists (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld).
 ```
 ## create folders to save the output of processed data of each chromosome
 mkdir a15m75 GenoLD.snp100
@@ -43,6 +42,8 @@ vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m7
 ```
 
 <br/> </br>
+
+## Quick Start
 
 **read data information**
 
