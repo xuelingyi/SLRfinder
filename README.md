@@ -152,7 +152,7 @@ This script will get the 012 genotypes of all LD clusters and rank them using fo
 3. Dext_max: on the heterozygosity~PC1 plot, the Euclidean distance between each dot and its closer corner ((0,0) or (1,1)) divided by half of the distance between the corners. The true SLR cluster should have a smaller Dext_max (i.e., denser clustering). 
 4. chi2: the chi-square value in the goodness of fit test on the even split of individuals into two clusters in each population. The true SLR cluster should have an even split of individuals into the two clusters representing males and females, thus a smaller chi2 (not different from the null expectation). 
 
-The script will write out three files in the dataset/parameter folder: the genotypes (**GT.RData**), information of the candidate regions (**cand_regions.rds**), and a PDF file of the QQ-plot and heterozygosity~PC1 plots of all candidate regions (e.g., **mydata_LD0.85cl20.pdf**). 
+The script will write out three files in the dataset/parameter folder: the genotypes (**GT.RData**), information on the candidate regions as R data (**cand_regions.rds**) and a csv (**mydata_can.csv**), and a PDF file of the QQ-plot and heterozygosity~PC1 plots of all candidate regions (e.g., **mydata_LD0.85cl20.pdf**). 
 ```
 ####### step 2. identify SLR candidates #######
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
