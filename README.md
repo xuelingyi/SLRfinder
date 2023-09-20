@@ -83,6 +83,7 @@ system(paste0("mkdir ", "whitelist"))
 
 data_cls <- NULL
 for (i in 1:nrow(LG)) {
+  chr = LG[i, "chr"]
   lg = LG[i, "lg"]
 
   data = read.table(paste0("../GenoLD.snp100/", mydata, "_", lg, "_a15m75.geno.ld"), header = T)
@@ -93,7 +94,7 @@ for (i in 1:nrow(LG)) {
 
   out = get_single_LD_cluster(data, min_LD = min_LD, min.cl.size=min.cl.size)
   position = as.data.frame(unlist(out$SNPs))
-  position = cbind(rep(lg, sum(out$nSNPs)), position)
+  position = cbind(rep(chr, sum(out$nSNPs)), position)
   write.table(position, paste0("./whitelist/position.", lg, ".list"), sep="\t", quote = F, row.names = F)
   data_cls <- rbind(data_cls, out)
 }
