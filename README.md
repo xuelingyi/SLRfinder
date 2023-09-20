@@ -38,6 +38,7 @@ If the dataset is small (e.g., RADseq data), all chromosomes can be processed to
 populations -P ./ -M popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m75
 ```
+<br/> </br>
 
 **read data information**
 
