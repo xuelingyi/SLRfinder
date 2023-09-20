@@ -128,27 +128,10 @@ for (i in 1:nrow(LG)){
 
 Run the R script below within the dataset folder. 
 ```
-##
-####### skip this section if all data in step 1 are still active in the R environment #######
-## input data information (same in step1)
-## dataset name
-mydata = "mydata"
-# sample information 
-sif = read.csv(paste0(mydata, ".csv"))
-# genome information (contig names in column1, chromosome names in column2)
-LG = read.table("reference.list", header = F)
-names(LG) = c("chr", "CHR")
+####### step 2. identify SLR candidates #######
+## if starting R from new: the data information needs to be read in again 
+# setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 
-## parameters
-min_LD=0.85
-min.cl.size=20 
-setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
-## load the data of LD clusters generated in step 1
-data_cls <- readRDS("data_cls.rds")
-
-source("../SLRfinder_functions.R")
-
-####### continue after the R script in step 1 #######
 files <- paste0("./file012/", list.files("file012"))
 indv_files <- files[grep(".indv",files)]
 pos_files <- files[grep(".pos",files)]
@@ -176,7 +159,8 @@ if(all(indv$V1 == pop_info$SampleID)) {
 
 save(data_cls, GT, map, ind, pop, file="GT.RData")
 
-### get the candidate LD clusters: output all significant candidates; if no significant result is found, output the five LD clusters that have the lowest adjusted p-values (the top-ranked LD clusters)
+### get the candidate LD clusters: output all significant candidates; if no significant result is found, output the five LD clusters that have the lowest adjusted p-values (the top-ranked LD clusters). Note that this step might take some time if using a large dataset. Using more cores can speed it up. 
+
 ## the ranks used for defining candidate regions
 ranks = c("Dext_max_rank", "R2_rank", "nSNPs_rank", "chi2_rank")
 cand_regions <- get_candidate_regions(data_cls, GT, map, pop, ranks=ranks, nPerm=10000, cores=1, alpha=0.05)
@@ -184,18 +168,7 @@ saveRDS(cand_regions, "cand_regions.rds")
 #cand_regions$candidates$regions
 
 
-
 ### plot results ###
-## if starting in the dataset folder using the above saved outputs:
-# mydata = "McK2020"
-# sif = read.csv(paste0(mydata, ".csv"))
-# LG = read.table("reference.list", header = F)
-# names(LG) = c("chr", "CHR")
-# min_LD=0.85
-# min.cl.size=20
-# setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
-# cand_regions = readRDS("cand_regions.rds")
-
 alpha=0.05
 list2env(cand_regions, globalenv())
 lambda <- lm(obs~exp+0, cand_regions$qq_data)$coefficients
