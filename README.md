@@ -5,13 +5,16 @@ This method is aimed to identify candidate sex-linked regions (SLRs) based on li
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
 <br/> </br>
 
-**Step0: generate the input vcf dataset and the LD edge list**
+<br>
 
 Create a folder directory for each dataset using the dataset name. The dataset folder should contain:
 1. **mydata.vcf** (or mydata.vcf.gz): the SNP genotypes in the vcf format 
 2. **dataset.csv**: the sample information file, including at least two columns named "SampleID" (the same as the sample names in the sequencing data) and "Population"
 3. **reference.list**, the genome information including two space-delimited columns: column1 is the contig/scaffold ID in the reference genome, column2 is the preferred chromosome names that may be more informative (e.g., LGx). The two columns can be identical if the contigs have already been renamed as the human-informative version in the vcf file.
 4. **SLRfinder_functions.R**: the R script for running SLRfinder, available on Github
+
+
+**Step0: generate the input vcf dataset and the LD edge list**
 
 If using large datasets (e.g., whole-genome resequencing), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes; the unassembled contigs may not be necessary to be included) or by contig/scaffold (if using low-quality genomes). See below for an example unix script for filtering and LD estimation. This script will save the filtered vcf files in the folder **a15m75** and save the LD edge lists (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld) in the folder **GenoLD.snp100**
 ```
