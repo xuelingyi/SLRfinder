@@ -86,7 +86,9 @@ source("SLRfinder_functions.R")
 Use the LD edge list and the parameters set above to identify LD clusters. This script processes the input data by chromosome so that it can be faster to run in parallel if using large datasets (such as whole-genome resequencing). It can also be easily modified to process all data combined. This script will generate: 
 1. a parameter-named folder (e.g., **LD8.5cl20**) that contains the output of the identified LD clusters (**data_cls.rds**)
 2. a subfolder (**LD8.5cl20/whitelist**) that contains positions (by chromosome) of the SNPs included in the identified LD clusters
-3. a subfolder (**LD8.5cl20/file012**) that contains the .012 files of the SNPs (by chromosome) included in the LD clusters 
+3. a subfolder (**LD8.5cl20/file012**) that contains the .012 files of the SNPs (by chromosome) included in the LD clusters
+
+This step can take a while so it might be good to use more cores.
 ```
 ########## step 1. get LD clusters ##########
 ## if all chr combined 
