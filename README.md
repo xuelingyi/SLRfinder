@@ -116,11 +116,12 @@ for (i in 1:nrow(LG)) {
 
   out = get_single_LD_cluster(data, min_LD = min_LD, min.cl.size=min.cl.size)
 
-  if(!is.null(out) & nrow(out) != 0){
+  if(!is.null(out)){
+  if(nrow(out) != 0){
   position = as.data.frame(unlist(out$SNPs))
   position = cbind(rep(chr, sum(out$nSNPs)), position)
   write.table(position, paste0("./whitelist/position.", lg, ".list"), sep="\t", quote = F, row.names = F)
-  data_cls <- rbind(data_cls, out)}
+  data_cls <- rbind(data_cls, out)}}
 }
 
 #range(data_cls$nSNPs)
