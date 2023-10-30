@@ -72,12 +72,14 @@ names(LG) = c("chr", "lg")
 
 # default parameters for whole-genome sequencing data
 min_LD=0.85
-min.cl.size=20 
+min.cl.size=20
+ncores=1
+# use more cores can speed up the analyses
 # use loser thresholds for RADseq data which are much sparser
 # min_LD=0.2
 # min.cl.size=5
 
-source("SLRfinder_functions.R")
+source("SLRfinder_functions.r")
 ```
 
 **Step1: get LD clusters**
@@ -93,6 +95,9 @@ This step can take a while so it might be good to use more cores.
 ## if all chr combined 
 # geno.LD <- read.table(paste0(mydata, "_a15m75.geno.ld"), header = T)
 # names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
+
+## if using scaffolds
+LG = LG[LG$chr %in% unique(geno.LD$CHR), ]
 
 system(paste0("mkdir ", "LD", min_LD*10, "cl", min.cl.size))
 setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
