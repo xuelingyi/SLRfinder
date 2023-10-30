@@ -8,7 +8,7 @@ Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, pa
 Create a directory for each dataset using the dataset name (e.g., mydata). This dataset folder should contain:
 1. **mydata.csv**: the sample information file named after the dataset. This should include at least two columns named "SampleID" (same as names in the sequencing data) and "Population"
 2. **reference.list**: the genome information including two space-delimited columns: column1 is the contig/scaffold ID in the reference genome, column2 is the more informative chromosome names (e.g., LGx). The two columns can be identical if the contigs have already been renamed into the human-informative version in the vcf file. If using the whole-genome resequencing (WGS) data, the unassembled contigs may not be necessary to be included in the analyses and do not need to be listed in this file. 
-3. **SLRfinder_functions.R**: the R script for running SLRfinder, available on Github
+3. **SLRfinder_functions.r**: the R script for running SLRfinder, available on Github
 4. **./a15m75**: a folder containing the filtered vcf files (can be generated using the step0_script below)
 5. **./GenoLD.snp100**: a folder containing the LD edge lists estimated using the filtered vcf files (can be generated using the step0_script below)
 <br>
