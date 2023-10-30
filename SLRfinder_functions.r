@@ -14,8 +14,8 @@ get_single_LD_cluster <- function(geno.LD, min_LD = 0.85, min.cl.size = 20){
   #Remove edges lower than min_LD
   white.list <- subset(geno.LD, as.numeric(r2) > min_LD)
 
-  if(nrow(white.list) == 0){out = NULL}
-  if(nrow(white.list) > 0){
+  out = NULL
+  if(nrow(white.list) > 1){
   #Parse the edge data to create a graph object
   g <- graph_from_edgelist(apply(white.list[,c("from", "to")], 2, function(o) as.character(o)), directed = FALSE)
   #Decompose the graph object into a list of components (i.e., LD clusters) and only keep the components containing at least min.cl.size number of vertices (i.e., SNPs)
