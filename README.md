@@ -97,7 +97,7 @@ This step can take a while so it might be good to use more cores.
 # names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
 
 ## if using scaffolds
-LG = LG[LG$chr %in% unique(geno.LD$CHR), ]
+# LG = LG[LG$chr %in% unique(geno.LD$CHR), ]
 
 system(paste0("mkdir ", "LD", min_LD*10, "cl", min.cl.size))
 setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
@@ -115,10 +115,12 @@ for (i in 1:nrow(LG)) {
   # data = geno.LD[geno.LD$CHR == LG[i, "chr"], ]
 
   out = get_single_LD_cluster(data, min_LD = min_LD, min.cl.size=min.cl.size)
+
+  if(!is.null(out)){
   position = as.data.frame(unlist(out$SNPs))
   position = cbind(rep(chr, sum(out$nSNPs)), position)
   write.table(position, paste0("./whitelist/position.", lg, ".list"), sep="\t", quote = F, row.names = F)
-  data_cls <- rbind(data_cls, out)
+  data_cls <- rbind(data_cls, out)}
 }
 
 #range(data_cls$nSNPs)
