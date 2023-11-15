@@ -8,6 +8,12 @@ samtools faidx ${ref}.fna
 module load gatk
 gatk CreateSequenceDictionary -R ${ref}.fna
 
+## prepare reference.list
+grep ">" ${ref}.fna | awk '{print $1}' |sed 's/>//g' > reference
+# LG contains the modified chr IDs
+paste reference LG -d " "  > reference.list
+rm reference
+
 ########################## Nine-spined sticklebacks ##########################
 Data were obtained from the published whole-genome sequencing of 887 wild individuals of Pungitius pungitius in Feng et al. (Feng, X., Merilä, J., & Löytynoja, A. (2022). Complex population history affects admixture analyses in nine‐spined sticklebacks. Molecular Ecology, 31(20), 5386-5401. https://onlinelibrary.wiley.com/doi/full/10.1111/mec.16651). 
 
