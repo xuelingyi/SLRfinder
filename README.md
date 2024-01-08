@@ -64,20 +64,20 @@ The basic information for SLRfinder to process the data.
 mydata = "mydata"
 
 ## Run the R scripts in the dataset folder
-# setwd(mydata)
+setwd(mydata)
 sif = read.csv(paste0(mydata, ".csv"))
 # get genome information (contig names in column1, chromosome names in column2)
 LG = read.table("reference.list", header = F)
 names(LG) = c("chr", "lg")
 
+sex_info=T
+myranks=c("Dext_var_rank", "R2_rank","nSNPs_rank", "chi2_rank")
+
 # default parameters for whole-genome sequencing data
 min_LD=0.85
 min.cl.size=20
-ncores=1
-# use more cores can speed up the analyses
-# use loser thresholds for RADseq data which are much sparser
-# min_LD=0.2
-# min.cl.size=5
+ncores=1 # use more cores can speed up the analyses
+# use loser thresholds (e.g., min_LD=0.2, min.cl.size=5) for RADseq data which are much sparser
 
 source("SLRfinder_functions.r")
 ```
@@ -110,7 +110,6 @@ for (i in 1:nrow(LG)) {
 
   data = read.table(paste0("../GenoLD.snp100/", mydata, "_", lg, "_a15m75.geno.ld"), header = T)
   names(data) = c("CHR", "from", "to", "N_INDV", "r2")
-
   # if all chr combined 
   # data = geno.LD[geno.LD$CHR == LG[i, "chr"], ]
 
@@ -123,8 +122,6 @@ for (i in 1:nrow(LG)) {
   write.table(position, paste0("./whitelist/position.", lg, ".list"), sep="\t", quote = F, row.names = F)
   data_cls <- rbind(data_cls, out)}}
 }
-
-#range(data_cls$nSNPs)
 data_cls$SNPs = apply(data_cls, 1, function(cl){ paste0(cl$chr, "_", cl$SNPs)})
 print(paste0("total number of LD clusters: ", nrow(data_cls)))
 saveRDS(data_cls, file="data_cls.rds")
@@ -136,25 +133,12 @@ for (i in 1:nrow(LG)){
   lg = LG[i, "lg"]
   system(paste0("vcftools --gzvcf ../a15m75/", mydata, "_", lg, "_a15m75.recode.vcf --positions ./whitelist/position.", lg, ".list", " --012 --out ./file012/", mydata, "_", lg, "_a15m75_LD", min_LD, "cl", min.cl.size))
 }
-
-# The above vcftools script can also be done in unix using the code below
-# module load vcftools
-# ind=mydata
-# param=LD8.5cl20
-# cd ${param}
-# mkdir file012
-## loop by chromosome (here total 21 chromosomes)
-# for chr in {1..21}
-# do
-# vcftools --gzvcf ../a15m75/${ind}_LG${chr}_a15m75.vcf.gz --positions ./whitelist/position.LG${chr}.list \
-# --012 --out ./file012/${ind}_LG${chr}_a15m75_LD${LD}cl${cl}
-# done
-# cd ../
 ```
 
+**Step2: process LD clusters and identify candidate sex-linked regions**
 **Step2.1: process the LD clusters**
 
-This step will This script will get the 012 genotypes of all LD clusters and generate two files in the dataset/parameter folder: a genotype file (**GT.RData**) and a data file (**data_all.rds**) that includes the estimated criteria parameters. 
+This script will get the 012 genotypes of all LD clusters and generate two files in the dataset/parameter folder: a genotype file (**GT.RData**) and a file of the processed data including estimated criteria parameters (**data_all.rds**). 
 ```
 ####### step 2.1 process LD clusters #######
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
@@ -190,16 +174,18 @@ data_all = get_data_output(data_cls, GT, map, pop, sex_info, cores=ncores)
 saveRDS(data_all, "data_all.rds")
 ```
 
-**Step2.2 identify candidate SLRs and plot the results**
+**Step2.2 Identify candidate SLRs and plot the results**
 
 If sex information is known, the LD clusters will be filtered and only clusters having <10% misplaced sexes among all samples of known sexes will be retained and plotted (**mydata_sexg.pdf**).
 
-Candidate LD clusters will also be identified based on rankings of default four criteria parameters:
+Candidate LD clusters will also be identified based on rankings of the default four criteria parameters:
 
 1. nSNPs: the number of SNPs in this cluster. The true SLR cluster should have more SNPs. 
 2. R2: the correlation coefficient between heterozygosity and PC1 scores. The true SLR cluster should have a higher R2. 
-3. Dext_var: on the heterozygosity~PC1 plot, the Euclidean distance between each dot and its closer corner (bottom-left or top-right) divided by half of the distance between the corners. The true SLR cluster should have a small variance of this distance (i.e., dense clustering). 
-4. chi2: the chi-square value in the goodness of fit test on the even split of individuals into two clusters in each population. The true SLR cluster should have an even split of individuals into the two clusters representing males and females, thus a smaller chi2 (not different from the null expectation). 
+3. chi2: the chi-square value in the goodness of fit test on the even split of individuals into two clusters in each population. The true SLR cluster should have an even split of individuals into the two clusters representing males and females, thus a smaller chi2 (not different from the null expectation).
+4. Dext_var: on the heterozygosity~PC1 plot, the Euclidean distance between each dot and its closer corner (bottom-left or top-right) divided by half of the distance between the corners. The true SLR cluster should have a small variance of this distance (i.e., dense clustering). 
+
+This step can be rerun on the processed data file (**data_all.rds**) using different ranks that might get better results than default. 
 
 The script will write out data of the candidate regions (**cand_regions.rds**, **mydata_can.csv**) in the dataset/parameter folder and plotted the results (**mydata_LD0.85cl20.pdf**).
 
@@ -208,10 +194,8 @@ The script will write out data of the candidate regions (**cand_regions.rds**, *
 print("step 2.2 identify SLR candidates")
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
-## print sex-related regions if know sex_info
-myranks=c("Dext_var_rank", "R2_rank","nSNPs_rank", "chi2_rank")
-sex_info=T
 
+## print sex-related regions if know sex_info
 if(sex_info){
   print("filter LD clusters by sex (10% misgrouped)")
   sex_filter = 0.1
@@ -246,12 +230,15 @@ if(sex_info){
   print("Sex info unknown. Identify candidates by ranks only.")
 }
 
-print(paste0("identify LD clusters by ranks: ", paste0(myranks, collapse = ", ")))
+## identify candidate LD clusters based on ranks (choose among: nSNPs_rank, R2_rank, chi2_rank, Dext_var_rank, Dext_max_rank, Dext_mean_rank, Dext_median_rank, Sex_rank).
+# Note: Sex_rank is based on the percentage of misplaced sexes, which should work better as a filtering threshold (as above). If included as a rank, this might generate candidates that rank high (i.e. with low percentages of misplacements) but does not fully separate the two sexes (i.e. not really sex-linked).
+# this step can be rerun using different rank combinations to see which get the best results
 #data_all = readRDS("data_all.rds")
+print(paste0("identify LD clusters by ranks: ", paste0(myranks, collapse = ", ")))
 cand_regions <- get_candidate_regions(data_all, ranks=myranks, nPerm=10000, cores=ncores, alpha=0.05)
 saveRDS(cand_regions, "cand_regions.rds")
 
-## plot results
+## plot results: the QQ-plot and all significant candidates or the five top-ranked LD clusters will be plotted in one PDF file
 #cand_regions = readRDS("cand_regions.rds")
 list2env(cand_regions, globalenv())
 alpha=0.05
@@ -260,8 +247,6 @@ qq_data$col=rep("grey40", nrow(data_out))
 qq_data$col[which(data_out$p_gc_adj<alpha)] <- "#ff9727"
 PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="SampleID", sort=F)
 
-## the script below will print all results (the QQ-plot and all significant candidates or the five
-## top-ranked LD clusters) into one PDF file, with one plot per page
 pdf(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".pdf"), width = 6, height = 4)
 print(ggplot(qq_data, aes(x=exp, y=obs)) +
         geom_point(col=qq_data$col) + theme_bw() + theme(legend.position = "none") +
