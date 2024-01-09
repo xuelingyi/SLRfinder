@@ -203,26 +203,27 @@ if(sex_info){
   myindex = length(grep("_", data_sex[1, "chr"])) + 2
   
   if(nrow(data_sex) > 0){
-    print(paste0(nrow(data_sex), " cluster(s) remained on ", 
-                 paste0(data_sex$chr, collapse = ", ")))
-    
-    
-    pdf(paste0(mydata, "_sexg.pdf"))
-    
-    for (i in 1:nrow(data_sex)) {
-      data = as.data.frame(data_sex$data[i])
+    if(length(unique(data_sex$chr)) > 10){
+      print(paste0("Sex filtering retained more than 10 chr: ", paste(unique(data_sex$chr), collapse=", ")))
+    } else {
+      print(paste0(nrow(data_sex), " cluster(s) remained on ", paste0(data_sex$chr, collapse = ", ")))
       
-      region=paste(LG[LG$chr == data_sex$chr[i], "lg"], 
-                   paste(range(as.numeric(do.call(rbind, strsplit(data_sex$SNPs[i][[1]],"_",fixed=TRUE))[,myindex])),collapse =  "-"), sep=":")
-      
-      title = paste0(region, "\nnSNPs=",data_sex$nSNPs[i])
-      
-      print(ggplot(data, aes(x=PC_scaled, y=Het)) + geom_point(aes(color=sex), alpha=0.6, size=2.5) +
-              geom_smooth(method = "lm",se=FALSE, col="black") +
-              theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
-                                title=title) + theme(title = element_text(size=10)))
+      pdf(paste0(mydata, "_sexg.pdf"))
+      for (i in 1:nrow(data_sex)) {
+        data = as.data.frame(data_sex$data[i])
+        
+        region=paste(LG[LG$chr == data_sex$chr[i], "lg"], 
+                     paste(range(as.numeric(do.call(rbind, strsplit(data_sex$SNPs[i][[1]],"_",fixed=TRUE))[,myindex])),collapse =  "-"), sep=":")
+        
+        title = paste0(region, "\nnSNPs=",data_sex$nSNPs[i])
+        
+        print(ggplot(data, aes(x=PC_scaled, y=Het)) + geom_point(aes(color=sex), alpha=0.6, size=2.5) +
+                geom_smooth(method = "lm",se=FALSE, col="black") +
+                theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
+                                  title=title) + theme(title = element_text(size=10)))
+      }
+      dev.off()
     }
-    dev.off()
   } else {
     print(paste0("No cluster remained after filtering sex_g <= ", sex_filter, "!"))
   }
