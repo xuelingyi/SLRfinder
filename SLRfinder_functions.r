@@ -43,6 +43,7 @@ get_single_LD_cluster <- function(geno.LD, min_LD = 0.85, min.cl.size = 20){
 eucl <- function(i, j){ sqrt((i[,1]-j[1])^2 + (i[,2]-j[2])^2 ) }
 
 
+## process data
 get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
   
   cat("Generating gds file \n")
@@ -105,13 +106,10 @@ get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
     if(sex_info){
       data = merge(data, sif[, c("SampleID", "sex")], by.x="Ind", by.y="SampleID", sort=F)
       data_sub = data[data$sex %in% c("female", "Female", "F", "male", "Male", "M"), ]
-      cl_info[,Sex_g:=(min(
-        sum(data_sub[data_sub$PC_scaled < 0.5, "sex"][[1]] %in% c("female", "Female", "F")), 
-        sum(data_sub[data_sub$PC_scaled < 0.5, "sex"][[1]] %in% c("male", "Male", "M"))
-        ) + 
-          min(
-            sum(data_sub[data_sub$PC_scaled >= 0.5, "sex"][[1]] %in% c("female", "Female", "F")),
-            sum(data_sub[data_sub$PC_scaled >= 0.5, "sex"][[1]] %in% c("male", "Male", "M")))/nrow(data_sub))]}
+      cl_info[,Sex_g:=(
+        (min(sum(data_sub[which(d_c1 < d_c2), "sex"][[1]] %in% c("female", "Female", "F")), sum(data_sub[which(d_c1 < d_c2), "sex"][[1]] %in% c("male", "Male", "M"))) + 
+          min(sum(data_sub[which(d_c1 >= d_c2), "sex"][[1]] %in% c("female", "Female", "F")), sum(data_sub[which(d_c1 >= d_c2), "sex"][[1]] %in% c("male", "Male", "M"))))/nrow(data_sub)
+        )]}
     
     return(as.data.frame(cl_info[, .(chr, nSNPs, mean_LD, nE, c, R2, PVE, PVE2, Dext_mean, Dext_max, Dext_median, Dext_var, Sex_g, chi2, SNPs, data=list(data))]))
   },mc.cores=cores))
@@ -139,8 +137,7 @@ get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
   return(data_out)
 }
 
-
-
+## get candidate regions
 get_candidate_regions <- function(data_out, ranks=c("Dext_var_rank", "R2_rank","nSNPs_rank","chi2_rank", "Sex_rank"), nPerm=10000, cores=1, alpha=0.05){
   
   rank=rowSums(data_out[,..ranks])
