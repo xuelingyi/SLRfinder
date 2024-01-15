@@ -92,7 +92,6 @@ get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
     Dext <- apply(Dists,1,min)/((eucl(matrix(c1,nrow=1),c2))/2)
     cl_info[,Dext_mean:=mean(Dext[!is.na(Dext)])] # mean
     cl_info[,Dext_max:=max(Dext[!is.na(Dext)])] # max
-    cl_info[,Dext_median:=median(Dext[!is.na(Dext)])] # median, accouting for outliers (may be true due to sampling error etc.)
     cl_info[,Dext_var:=var(Dext[!is.na(Dext)])]
     
     data[,Ind:=ind]
@@ -111,7 +110,7 @@ get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
           min(sum(data_sub[which(d_c1 >= d_c2), "sex"][[1]] %in% c("female", "Female", "F")), sum(data_sub[which(d_c1 >= d_c2), "sex"][[1]] %in% c("male", "Male", "M"))))/nrow(data_sub)
         )]}
     
-    return(as.data.frame(cl_info[, .(chr, nSNPs, mean_LD, nE, c, R2, PVE, PVE2, Dext_mean, Dext_max, Dext_median, Dext_var, Sex_g, chi2, SNPs, data=list(data))]))
+    return(as.data.frame(cl_info[, .(chr, nSNPs, mean_LD, nE, c, R2, PVE, PVE2, Dext_mean, Dext_max, Dext_var, Sex_g, chi2, SNPs, data=list(data))]))
   },mc.cores=cores))
   
   cat("Closing gds file and returning data \n\n")
@@ -123,14 +122,9 @@ get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
   
   # rank clusters: use the same rank when having the same values
   data_out$Dext_mean_rank=rank(data_out$Dext_mean, ties.method="min")
-  data_out$Dext_median_rank=rank(data_out$Dext_median, ties.method="min")
   data_out$Dext_max_rank=rank(data_out$Dext_max, ties.method="min")
   data_out$Dext_var_rank=rank(data_out$Dext_var, ties.method="min")
   data_out$chi2_rank=rank(data_out$chi2, ties.method="min")
-  data_out$Sex_rank=0
-  if(sex_info){
-    data_out$Sex_rank=rank(data_out$Sex_g, ties.method="min")
-  } 
   # rank by decreasing order!
   data_out$nSNPs_rank=rank(-data_out$nSNPs, ties.method="min")
   data_out$R2_rank=rank(-data_out$R2, ties.method="min")
@@ -138,7 +132,7 @@ get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
 }
 
 ## get candidate regions
-get_candidate_regions <- function(data_out, ranks=c("Dext_var_rank", "R2_rank","nSNPs_rank","chi2_rank", "Sex_rank"), nPerm=10000, cores=1, alpha=0.05){
+get_candidate_regions <- function(data_out, ranks=c("Dext_var_rank", "R2_rank","nSNPs_rank","chi2_rank"), nPerm=10000, cores=1, alpha=0.05){
   
   rank=rowSums(data_out[,..ranks])
   data_out[,rank:=rank]
@@ -188,11 +182,12 @@ get_candidate_regions <- function(data_out, ranks=c("Dext_var_rank", "R2_rank","
   print(paste0(nrow(candidates), " candidate(s)"))
   candidates = merge(candidates, LG, by="chr")
   
-  write.csv(candidates[, c("chr", "lg", "region", "rank", "p_gc_adj",
-                           "nSNPs", "Dext_mean", "R2", "chi2", "Sex_g",
-                           "nSNPs_rank", "Dext_mean_rank", "R2_rank", "chi2_rank", "Sex_rank", 
-                           "Dext_median_rank", "Dext_max_rank", "mean_LD", "Dext_max")], 
+  write.csv(candidates[, c("chr", "lg", "region", "Sex_g", "rank", "p_gc_adj",
+                           "nSNPs", "Dext_mean", "R2", "chi2", 
+                           "nSNPs_rank", "Dext_mean_rank", "R2_rank", "chi2_rank", 
+                           "Dext_max_rank", "mean_LD", "Dext_max")], 
             "candidates.csv", row.names = F)
   
   return(list(data_out=data_out, candidates=candidates, qq_data=qq_data, PCA_het_data=PCA_het_data, lambda=lambda))
 }
+
