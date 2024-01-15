@@ -207,22 +207,23 @@ if(sex_info){
       print(paste0("Sex filtering retained more than 10 chr: ", paste(unique(data_sex$chr), collapse=", ")))
     } else {
       print(paste0(nrow(data_sex), " cluster(s) remained on ", paste0(data_sex$chr, collapse = ", ")))
+      data_sex[,region:=apply(data_sex,1,function(x)region=paste(x$chr, paste(range(as.numeric(do.call(rbind,strsplit(x$SNPs,"_",fixed=TRUE))[,myindex])),collapse="-"),sep=":"))]
       
       pdf(paste0(mydata, "_sexg.pdf"))
       for (i in 1:nrow(data_sex)) {
         data = as.data.frame(data_sex$data[i])
-        
-        region=paste(LG[LG$chr == data_sex$chr[i], "lg"], 
-                     paste(range(as.numeric(do.call(rbind, strsplit(data_sex$SNPs[i][[1]],"_",fixed=TRUE))[,myindex])),collapse =  "-"), sep=":")
-        
+        region=data_sex$region[i]
         title = paste0(region, "\nnSNPs=",data_sex$nSNPs[i])
-        
-        print(ggplot(data, aes(x=PC_scaled, y=Het)) + geom_point(aes(color=sex), alpha=0.6, size=2.5) +
-                geom_smooth(method = "lm",se=FALSE, col="black") +
-                theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
-                                  title=title) + theme(title = element_text(size=10)))
+
+        print(ggplot(data, aes(x=PC_scaled, y=Het)) + geom_point(aes(color=sex), alpha=0.6, size=2.5) + geom_smooth(method = "lm",se=FALSE, col="black") + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
       }
       dev.off()
+      
+      write.csv(data_sex[, c("chr", "region", "Sex_g", 
+                               "nSNPs", "Dext_mean", "R2", "chi2", 
+                               "nSNPs_rank", "Dext_mean_rank", "R2_rank", "chi2_rank", 
+                               "Dext_max_rank", "mean_LD", "Dext_max")], 
+                "sex_filter.csv", row.names = F)
     }
   } else {
     print(paste0("No cluster remained after filtering sex_g <= ", sex_filter, "!"))
@@ -231,9 +232,9 @@ if(sex_info){
   print("Sex info unknown. Identify candidates by ranks only.")
 }
 
-## identify candidate LD clusters based on ranks (choose among: nSNPs_rank, R2_rank, chi2_rank, Dext_var_rank, Dext_max_rank, Dext_mean_rank, Dext_median_rank, Sex_rank).
-# Note: Sex_rank is based on the percentage of misplaced sexes, which should work better as a filtering threshold (as above). If included as a rank, this might generate candidates that rank high (i.e. with low percentages of misplacements) but does not fully separate the two sexes (i.e. not really sex-linked).
-# this step can be rerun using different rank combinations to see which get the best results
+
+## identify candidate LD clusters based on ranks (choose among: nSNPs_rank, R2_rank, chi2_rank, Dext_var_rank, Dext_max_rank, Dext_mean_rank).
+# this step can be rerun using different rank combinations
 #data_all = readRDS("data_all.rds")
 print(paste0("identify LD clusters by ranks: ", paste0(myranks, collapse = ", ")))
 cand_regions <- get_candidate_regions(data_all, ranks=myranks, nPerm=10000, cores=ncores, alpha=0.05)
@@ -267,10 +268,11 @@ for(r in unique(PCA_het_data$region)) {
   title = paste0(sub(chr, lg, label[1]), "\n", label[2], " ", label[3])
   
   ## color individuals by population; can color by sex if known
-  print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") +
-           geom_point(aes(x=PC_scaled, y=Het, color=sex.y), alpha=0.6, size=2.5) + theme_bw() +
-           labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
-                title=title) + theme(title = element_text(size=10)))
+  if(sex_info){
+    print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") + geom_point(aes(x=PC_scaled, y=Het, color=sex), alpha=0.6, size=2.5) + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
+  } else {
+    print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") + geom_point(aes(x=PC_scaled, y=Het, color=Pop), alpha=0.6, size=2.5) + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
+  }
 }
 dev.off()
 ```
