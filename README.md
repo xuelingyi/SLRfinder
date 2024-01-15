@@ -4,18 +4,18 @@ This method is aimed at identifying candidate sex-linked regions (SLRs) based on
 
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
 
-## Input files
+## Prepare the input files
 Create a directory for each dataset using the dataset name (e.g., mydata). This dataset folder should contain:
 1. **mydata.csv**: the sample information file named after the dataset. This should include at least two columns named "SampleID" (same as names in the sequencing data) and "Population". Sex information (e.g., male, female, unknown) can be included in a column named "sex".
 2. **reference.list**: the genome information including two space-delimited columns: column1 is the contig/scaffold ID in the reference genome, column2 is the more informative chromosome names (e.g., LGx). The two columns can be identical if the contigs have already been renamed into the human-informative version in the vcf file. If using the whole-genome resequencing (WGS) data, the unassembled contigs may not be necessary to be included in the analyses and do not need to be listed in this file. 
 3. **SLRfinder_functions.r**: the R script for running SLRfinder, available on Github
-4. **./a15m75**: a folder containing the filtered vcf files (can be generated using the step0_script below)
-5. **./GenoLD.snp100**: a folder containing the LD edge lists estimated using the filtered vcf files (can be generated using the step0_script below)
+4. **./a15m75**: a folder containing the filtered vcf files (can be generated using the script below)
+5. **./GenoLD.snp100**: a folder containing the LD edge lists estimated using the filtered vcf files (can be generated using the script below)
 <br>
 
-**Step0: prepare the input vcf datasets and the LD edge lists**
+**prepare the input vcf datasets and the LD edge lists**
 
-This is an example **unix** script (can be adapted to R scripts) for vcf filtering and LD estimation. If using large datasets (e.g., WGS), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes) or by contig/scaffold (if using low-quality genomes). Run the following scripts in the dataset folder that should also contain the unfiltered SNP genotypes (**mydata.vcf**). This script will generate a folder **a15m75** to save the filtered vcf files, and a folder **GenoLD.snp100** to save the LD edge lists (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld).
+This is an example **unix** script for vcf filtering and LD estimation. If using large datasets (e.g., WGS), it will be faster to process data in parallel by chromosome (if using chromosome-level reference genomes) or by contig/scaffold (if using low-quality genomes). Run the following scripts in the dataset folder that should also contain the unfiltered SNP genotypes (**mydata.vcf**). This script will generate a folder **a15m75** to save the filtered vcf files, and a folder **GenoLD.snp100** to save the LD edge lists (mydata_LGx_a15m75.geno.ld, or mydata_a15m75.geno.ld).
 ```
 ## create folders to save the output of processed data of each chromosome
 mkdir a15m75 GenoLD.snp100
@@ -25,12 +25,12 @@ chr=$(sed -n ${SLURM_ARRAY_TASK_ID}p reference.list | awk '{print $1}')
 lg=$(sed -n ${SLURM_ARRAY_TASK_ID}p reference.list | awk '{print $2}')
 ind=mydata
 
-## filtering 
+## SNP filtering 
 vcftools --gzvcf ${ind}.vcf.gz \
 --chr ${chr} --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 \
 --recode --recode-INFO-all --out a15m75/${ind}_${lg}_a15m75
 
-## LD calculation
+## LD edge list
 vcftools --vcf ./a15m75/${ind}_${lg}_a15m75.recode.vcf \
 --geno-r2 --ld-window 100 \
 --out ./GenoLD.snp100/${ind}_${lg}_a15m75
@@ -82,7 +82,7 @@ ncores=1 # use more cores can speed up the analyses
 source("SLRfinder_functions.r")
 ```
 
-**Step1: get LD clusters**
+**Step1: identify LD clusters**
 
 Use the LD edge list and the parameters set above to identify LD clusters. This script processes the input data by chromosome (so that it can be faster when processing WGS data), but it can also be easily modified to process all data combined (see the notes in the codes below). This script will generate: 
 1. a parameter-named folder (e.g., **LD8.5cl20**) that contains information of the identified LD clusters (**data_cls.rds**)
@@ -91,7 +91,7 @@ Use the LD edge list and the parameters set above to identify LD clusters. This 
 
 This step can take a while so it might be good to use more cores.
 ```
-########## step 1. get LD clusters ##########
+########## step 1. identify LD clusters ##########
 ## if all chr combined 
 # geno.LD <- read.table(paste0(mydata, "_a15m75.geno.ld"), header = T)
 # names(geno.LD) = c("CHR", "from", "to", "N_INDV", "r2")
@@ -135,12 +135,11 @@ for (i in 1:nrow(LG)){
 }
 ```
 
-**Step2: process LD clusters and identify candidate sex-linked regions**
-**Step2.1: process the LD clusters**
+**Step2: process LD clusters**
 
 This script will get the 012 genotypes of all LD clusters and generate two files in the dataset/parameter folder: a genotype file (**GT.RData**) and a file of the processed data including estimated criteria parameters (**data_all.rds**). 
 ```
-####### step 2.1 process LD clusters #######
+####### step 2 process LD clusters #######
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 files <- paste0("./file012/", list.files("file012"))
@@ -174,7 +173,7 @@ data_all = get_data_output(data_cls, GT, map, pop, sex_info, cores=ncores)
 saveRDS(data_all, "data_all.rds")
 ```
 
-**Step2.2 Identify candidate SLRs and plot the results**
+**Step3. Identify candidate SLRs and plot the results**
 
 If sex information is known, the LD clusters will be filtered and only clusters having <10% misplaced sexes among all samples of known sexes will be retained and plotted (**mydata_sexg.pdf**).
 
@@ -190,7 +189,7 @@ This step can be rerun on the processed data file (**data_all.rds**) using diffe
 The script will write out data of the candidate regions (**cand_regions.rds**, **mydata_can.csv**) in the dataset/parameter folder and plotted the results (**mydata_LD0.85cl20.pdf**).
 
 ```
-####### step 2.2 identify SLR candidates #######
+####### step 3. identify SLR candidates #######
 print("step 2.2 identify SLR candidates")
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
