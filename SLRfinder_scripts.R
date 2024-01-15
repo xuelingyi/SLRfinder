@@ -5,13 +5,13 @@ min_LD = as.numeric(readline(prompt="min_LD (0.85): "))
 min.cl.size = as.numeric(readline(prompt="min.cl.size (20): "))
 ncores = as.numeric(readline(prompt="cores to use: "))
 
-myranks=c("Dext_var_rank", "R2_rank","nSNPs_rank", "chi2_rank")
-sex_info=T
-
 #mydata = "mydata"
 #min_LD=0.85
 #min.cl.size=20
 #ncores=1
+
+myranks=c("Dext_var_rank", "R2_rank", "nSNPs_rank", "chi2_rank")
+sex_info=F
 
 ########### read data information ###########
 print("read data information")
@@ -76,7 +76,7 @@ for (i in 1:nrow(LG)){
   system(paste0("vcftools --gzvcf ../a15m75/", mydata, "_", lg, "_a15m75.recode.vcf --positions ./whitelist/position.", lg, ".list", " --012 --out ./file012/", mydata, "_", lg, "_a15m75_LD", min_LD, "cl", min.cl.size))
 }
 
-####### step 2.1 process LD clusters #######
+####### step 2 process LD clusters #######
 #setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 #data_cls = readRDS("data_cls.rds")
 
@@ -117,7 +117,7 @@ if(all(indv$V1 == pop_info$SampleID)) {
 
 save(data_cls, GT, map, ind, pop, file="GT.RData")
 
-####### step 2.2 identify SLR candidates #######
+####### step 3 identify SLR candidates #######
 #setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 #data_cls = readRDS("data_cls.rds")
 
@@ -137,22 +137,23 @@ if(sex_info){
       print(paste0("Sex filtering retained more than 10 chr: ", paste(unique(data_sex$chr), collapse=", ")))
     } else {
       print(paste0(nrow(data_sex), " cluster(s) remained on ", paste0(data_sex$chr, collapse = ", ")))
+      data_sex[,region:=apply(data_sex,1,function(x)region=paste(x$chr, paste(range(as.numeric(do.call(rbind,strsplit(x$SNPs,"_",fixed=TRUE))[,myindex])),collapse="-"),sep=":"))]
       
       pdf(paste0(mydata, "_sexg.pdf"))
       for (i in 1:nrow(data_sex)) {
         data = as.data.frame(data_sex$data[i])
-        
-        region=paste(LG[LG$chr == data_sex$chr[i], "lg"], 
-                     paste(range(as.numeric(do.call(rbind, strsplit(data_sex$SNPs[i][[1]],"_",fixed=TRUE))[,myindex])),collapse =  "-"), sep=":")
-        
+        region=data_sex$region[i]
         title = paste0(region, "\nnSNPs=",data_sex$nSNPs[i])
         
-        print(ggplot(data, aes(x=PC_scaled, y=Het)) + geom_point(aes(color=sex), alpha=0.6, size=2.5) +
-                geom_smooth(method = "lm",se=FALSE, col="black") +
-                theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
-                                  title=title) + theme(title = element_text(size=10)))
+        print(ggplot(data, aes(x=PC_scaled, y=Het)) + geom_point(aes(color=sex), alpha=0.6, size=2.5) + geom_smooth(method = "lm",se=FALSE, col="black") + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
       }
       dev.off()
+      
+      write.csv(data_sex[, c("chr", "region", "Sex_g", 
+                             "nSNPs", "Dext_mean", "R2", "chi2", 
+                             "nSNPs_rank", "Dext_mean_rank", "R2_rank", "chi2_rank", 
+                             "Dext_max_rank", "mean_LD", "Dext_max")], 
+                "sex_filter.csv", row.names = F)
     }
   } else {
     print(paste0("No cluster remained after filtering sex_g <= ", sex_filter, "!"))
@@ -196,10 +197,11 @@ for(r in unique(PCA_het_data$region)) {
   title = paste0(sub(chr, lg, label[1]), "\n", label[2], " ", label[3])
   
   ## color individuals by population; can color by sex if known
-  print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") +
-           geom_point(aes(x=PC_scaled, y=Het, color=sex.y), alpha=0.6, size=2.5) + theme_bw() +
-           labs(x="PC1 (scaled)", y="Proportion heterozygous loci",
-                title=title) + theme(title = element_text(size=10)))
+  if(sex_info){
+    print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") + geom_point(aes(x=PC_scaled, y=Het, color=sex), alpha=0.6, size=2.5) + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
+  } else {
+    print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") + geom_point(aes(x=PC_scaled, y=Het, color=Pop), alpha=0.6, size=2.5) + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
+  }
 }
 dev.off()
 
