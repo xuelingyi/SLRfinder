@@ -2,8 +2,6 @@
 
 This method is aimed at identifying candidate sex-linked regions (SLRs) based on heterozygosity and linkage disequilibrium (LD) using SNP genotypes in a vcf file. If sexes are known for some or all individual samples, then the sex information can be used to filter the LD clusters to identify candidate sex chromosomes. If sexes are unknown or the filtering step fails (e.g., no LD cluster remained or too many clusters remained after filtering), ranks of several other parameters can be used to identify candidate sex-linked LD clusters. 
 
-![Fig1_SLRfinder](https://github.com/xuelingyi/SLRfinder/assets/76267685/765792df-5083-4397-a99b-50b4cc812503)
-
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
 
 ## Prepare the input files
@@ -52,6 +50,10 @@ SLRfinder can be readily applied to the prepared data by saving the R script **S
 ## If you don't like the prompt, you can modify the first few lines to specify your inputs.
 source("SLRfinder_scripts.R")
 ```
+
+<br>
+
+![Fig1_SLRfinder](https://github.com/xuelingyi/SLRfinder/assets/76267685/765792df-5083-4397-a99b-50b4cc812503)
 
 <br>
 
