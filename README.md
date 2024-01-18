@@ -270,19 +270,23 @@ for(r in unique(PCA_het_data$region)) {
   ## replace the original contig name with the more informative chromosome ID (LGx)
   title = paste0(sub(chr, lg, label[1]), "\n", label[2], " ", label[3])
   
-  ## color individuals by population; can color by sex if known
+  ## color individuals by population; can color by phenotypic sex if known
   if(sex_info){
     print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") + geom_point(aes(x=PC_scaled, y=Het, color=sex), alpha=0.6, size=2.5) + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
   } else {
     print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") + geom_point(aes(x=PC_scaled, y=Het, color=Pop), alpha=0.6, size=2.5) + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
   }
+
+### extract identified sex ID and plot by SLRfinder identified sex
+#pca$SLRfinder_sex = "unknown"
+#pca[pca$PC_scaled < 0.5, "SLRfinder_sex"] = "homogametic"
+#pca[pca$PC_scaled > 0.5, "SLRfinder_sex"] = "heterogametic"
+#sif = merge(sif, pca[, c("Ind", "SLRfinder_sex")], by.x="SampleID", by.y="Ind", all.x=T, sort=F)
+#ggplot(pca[order(pca$SLRfinder_sex, decreasing = T),], aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") + geom_point(aes(x=PC_scaled, y=Het, color=SLRfinder_sex), alpha=0.6, size=2.5) +
+#labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme_bw() + theme(title = element_text(size=10)))
 }
 dev.off()
 
-### to extract identified sex ID
-pca$SLR_sex = "homogametic"
-pca[pca$PC_scaled > 0.5, "SLR_sex"] = "heterogametic"
-sif = merge(sif, pca[, c("Ind", "SLR_sex")], by.x="SampleID", by.y="Ind", all.x=T, sort=F)
 ```
 
 
