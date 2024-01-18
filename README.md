@@ -278,5 +278,11 @@ for(r in unique(PCA_het_data$region)) {
   }
 }
 dev.off()
+
+### to extract identified sex ID
+pca$SLR_sex = "homogametic"
+pca[pca$PC_scaled > 0.5, "SLR_sex"] = "heterogametic"
+sif = merge(sif, pca[, c("Ind", "SLR_sex")], by.x="SampleID", by.y="Ind", all.x=T, sort=F)
 ```
+
 
