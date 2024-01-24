@@ -173,8 +173,9 @@ if(all(indv$V1 == pop_info$SampleID)) {
 
 save(data_cls, GT, map, ind, pop, file="GT.RData")
 
-data_all = get_data_output(data_cls, GT, map, pop, sex_info, cores=ncores)
+data_all = get_data_output(data_cls, GT, map, pop, sex_info, heterog_homog = c(0.5, 0.5), cores=ncores)
 saveRDS(data_all, "data_all.rds")
+## if expecting skewed sex ratios, the expected probability of sampling the heterogametic sex and the homogametic sex can be specified using the heterog_homog parameter. This will impact the chi-square tests of goodness of fit.
 ```
 
 **Step3. Identify candidate SLRs and plot the results**
