@@ -44,7 +44,7 @@ eucl <- function(i, j){ sqrt((i[,1]-j[1])^2 + (i[,2]-j[2])^2 ) }
 
 
 ## process data
-get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
+get_data_output = function(data_cls, GT, map, pop, sex_info=T, heterog_homog = c(0.5, 0.5), cores=1){
   
   cat("Generating gds file \n")
   name <- paste0("file.gds")
@@ -97,9 +97,16 @@ get_data_output = function(data_cls, GT, map, pop, sex_info=T, cores=1){
     data[,Ind:=ind]
     data[,Pop:=pop]
     tbl <- data[,table(Pop,PC_scaled<0.5)]
-    cl_info[,chi2:=sum(apply(tbl,1,function(x){
-      chisq.test(x)$statistic
-    }))] # max
+    ## F, T
+    if(all(heterog_homog == 0.5)){
+      cl_info[,chi2:=sum(apply(tbl,1,function(x){
+        chisq.test(x)$statistic
+      }))] # max
+    } else {
+      cl_info[,chi2:=sum(apply(tbl,1,function(x){
+        chisq.test(x, p=heterog_homog)$statistic
+      }))]
+    }
     
     cl_info[,Sex_g:=1]
     if(sex_info){
