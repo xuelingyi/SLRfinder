@@ -1,4 +1,91 @@
-###### test datasets using different numbers of individuals or populations ##################
+########################## index reference genomes ##########################
+module load bwa
+bwa index ${ref}.fna
+
+module load samtools
+samtools faidx ${ref}.fna
+
+module load gatk
+gatk CreateSequenceDictionary -R ${ref}.fna
+
+## prepare reference.list
+grep ">" ${ref}.fna | awk '{print $1}' |sed 's/>//g' > reference
+# LG contains the modified chr IDs
+paste reference LG -d " "  > reference.list
+rm reference
+
+
+
+########################## Nine-spined stickleback datasets ##########################
+Data were obtained from the published whole-genome sequencing of 887 wild individuals of Pungitius pungitius in Feng et al. (Feng, X., Merilä, J., & Löytynoja, A. (2022). Complex population history affects admixture analyses in nine‐spined sticklebacks. Molecular Ecology, 31(20), 5386-5401. https://onlinelibrary.wiley.com/doi/full/10.1111/mec.16651). 
+
+## Get biallelic SNPs (by chromosome) from the GATK-processed data including all sequenced individuals
+for chr in {1..21}
+do
+bcftools view -m2 -M2 -v snps --min-ac=1 nsp1075_LG${chr}.vcf.gz -Oz -o v7.LG${chr}.vcf.gz
+done
+
+## Subset individuals into different datasets
+ind=mydataset   ## this is the dataset name
+cd ${ind}
+mkdir a15m75 GenoLD.snp100
+
+# subset vcf data by chromosome (run in parallel)
+chr=${SLURM_ARRAY_TASK_ID}
+bcftools view -S ${ind}.list v7.LG${chr}.vcf.gz \
+| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all -c \
+| bcftools view -Oz -o ./a15m75/${ind}_v7LG${chr}_a15m75.vcf.gz
+
+
+
+########################## chum salmon RADseq data ##########################
+Data were generated in McKinney et al. 2020. Raw RADseq data are downloaded from NCBI BioProject PRJNA611968. 
+
+module load sratoolkit
+sra=$(sed -n ${SLURM_ARRAY_TASK_ID}p PRJNA611968_SraAccList)
+prefetch ${sra}
+mv ${sra}/${sra}.sra ./
+rmdir ${sra}
+fasterq-dump --split-files ${sra}.sra
+
+## map to the reference genome
+module load bwa
+bwa index GCF_023373465.1_Oket_V2_genomic.fna
+
+module load samtools
+
+PL=IlluminaHiseq4000
+ind=$(sed -n ${SLURM_ARRAY_TASK_ID}p PRJNA611968_SraAccList)
+
+bwa mem -t8 -M -P \
+-R "@RG\tID:${ind}\tSM:${ind}\tPL:${PL}\tLB:${ind}\tPU:1" \
+../GCF_023373465.1/GCF_023373465.1_Oket_V2_genomic.fna \
+../raw/FASTQ/${ind}.fastq \
+| samtools view -F4 -h -b -o ${ind}.bam
+
+samtools sort -n ${ind}.bam -O bam -o ${ind}.nsort.bam
+samtools fixmate -@ 8 -m ${ind}.nsort.bam ${ind}.fixmate.bam
+rm ${ind}.bam
+rm ${ind}.nsort.bam
+samtools sort ${ind}.fixmate.bam -O bam -o ${ind}.fixmate.sort.bam
+rm ${ind}.fixmate.bam
+samtools index ${ind}.fixmate.sort.bam
+samtools markdup ${ind}.fixmate.sort.bam ${ind}.markdup.bam
+rm ${ind}.fixmate.sort.bam
+rm ${ind}.fixmate.sort.bam.bai
+samtools index ${ind}.markdup.bam
+samtools flagstat ${ind}.markdup.bam > flagstat/${ind}.markdup.bam.flagstat
+
+## genotype
+module load stacks/2.65
+ref_map.pl -T 8 --samples ../bwa --popmap ../popmap -o ./ 
+populations -t 8 -P ./ -M ../popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
+
+
+
+
+########################## Nine-spined stickleback subsets: test power ##########################
+## different sample sizes
 west = read.csv("west_pop8.csv")
 pop8 = unique(west$Population)
 for (i in 3:5) {
@@ -47,8 +134,7 @@ for (i in 1:5) {
   setwd("../")
 }
 
-
-############### test datasets for different sex ratio ##########################
+## different sex ratios
 ## only use the populations that have enough individuals for both sexes to generated the desired sex ratio
 pop7 = pop8[pop8!="NOR-ENG"]
 pop24 = pop29[!(pop29 %in% c("SWE-NAV", "SWE-KIR", "FIN-RII", "FIN-PYO", "FIN-KRK"))]
@@ -172,5 +258,3 @@ for (i in files$V1){
   print(i)
   print(table(data$sex))
 }
-
-
