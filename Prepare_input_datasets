@@ -14,7 +14,9 @@ grep ">" ${ref}.fna | awk '{print $1}' |sed 's/>//g' > reference
 paste reference LG -d " "  > reference.list
 rm reference
 
-########################## Nine-spined sticklebacks ##########################
+
+
+########################## Nine-spined stickleback datasets ##########################
 Data were obtained from the published whole-genome sequencing of 887 wild individuals of Pungitius pungitius in Feng et al. (Feng, X., Merilä, J., & Löytynoja, A. (2022). Complex population history affects admixture analyses in nine‐spined sticklebacks. Molecular Ecology, 31(20), 5386-5401. https://onlinelibrary.wiley.com/doi/full/10.1111/mec.16651). 
 
 ## Get biallelic SNPs (by chromosome) from the GATK-processed data including all sequenced individuals
@@ -46,7 +48,6 @@ mv ${sra}/${sra}.sra ./
 rmdir ${sra}
 fasterq-dump --split-files ${sra}.sra
 
-
 ## map to the reference genome
 module load bwa
 bwa index GCF_023373465.1_Oket_V2_genomic.fna
@@ -75,9 +76,185 @@ rm ${ind}.fixmate.sort.bam.bai
 samtools index ${ind}.markdup.bam
 samtools flagstat ${ind}.markdup.bam > flagstat/${ind}.markdup.bam.flagstat
 
-
 ## genotype
 module load stacks/2.65
 ref_map.pl -T 8 --samples ../bwa --popmap ../popmap -o ./ 
 populations -t 8 -P ./ -M ../popmap --min-maf 0.15 -R 0.75 --ordered-export --vcf
 
+
+
+
+########################## Nine-spined stickleback subsets: test power ##########################
+## different sample sizes
+west = read.csv("west_pop8.csv")
+pop8 = unique(west$Population)
+for (i in 3:5) {
+  ind = lapply(pop8, function(p){
+    sample(west[west$Population == p, "SampleID"], size=i, replace = F)
+  })
+  write.table(unlist(ind), paste0("westpop8_ind", i, ".list"), row.names = F, col.names = F, quote = F)
+  write.csv(west[west$SampleID %in% unlist(ind), ], paste0("westpop8_ind", i, ".csv"), row.names = F)
+}
+for (i in 1:5) {
+  if(i ==1){ pop = "BEL-MAL"
+  } else{
+    pop = sample(pop8, size=i, replace = F)
+  }
+  data = west[west$Population %in% pop, ]
+  system(paste0("mkdir ./west_power/westpop8_pop", i))
+  setwd(paste0("./west_power/westpop8_pop", i))
+  write.table(data$SampleID, paste0("westpop8_pop", i, ".list"), row.names = F, col.names = F, quote = F)
+  write.csv(data, paste0("westpop8_pop", i, ".csv"), row.names = F)
+  setwd("../../")
+}
+
+east = read.csv("east_pop29.csv")
+for (i in 3:5) {
+  ind = lapply(pop29, function(p){
+    sample(east[east$Population == p, "SampleID"], size=i, replace = F)
+  })
+  data = east[east$SampleID %in% unlist(ind), ]
+  system(paste0("mkdir eastpop29_ind", i))
+  setwd(paste0("eastpop29_ind", i))
+  
+  write.table(data$SampleID, paste0("eastpop29_ind", i, ".list"), row.names = F, col.names = F, quote = F)
+  write.csv(data, paste0("eastpop29_ind", i, ".csv"), row.names = F)
+  setwd("../")
+}
+for (i in 1:5) {
+  if(i ==1){ pop = "FIN-HEL"
+  } else{
+    pop = sample(pop29, size=i, replace = F)
+  }
+  data = east[east$Population %in% pop, ]
+  system(paste0("mkdir ./eastpop29_pop", i))
+  setwd(paste0("./eastpop29_pop", i))
+  write.table(data$SampleID, paste0("eastpop29_pop", i, ".list"), row.names = F, col.names = F, quote = F)
+  write.csv(data, paste0("eastpop29_pop", i, ".csv"), row.names = F)
+  setwd("../")
+}
+
+## different sex ratios
+## only use the populations that have enough individuals for both sexes to generated the desired sex ratio
+pop7 = pop8[pop8!="NOR-ENG"]
+pop24 = pop29[!(pop29 %in% c("SWE-NAV", "SWE-KIR", "FIN-RII", "FIN-PYO", "FIN-KRK"))]
+
+## test 9 combinations of sex ratio
+ratios = c("m1f1", 
+           "m0f1", "m1f0", 
+           "m1f10", "m10f1",
+           "m1f3", "m3f1",
+           "m1f2", "m2f1")
+## the last two additional ratios (did not keep same ind number per pop)
+westpop7 = west[west$Population %in% pop7,]
+west_M = westpop7[westpop7$sex == "Male", ]
+west_F = westpop7[westpop7$sex == "Female", ]
+for (r in ratios){
+  ind=NULL
+  if(r=="m1f1"){
+    for(p in pop7){
+      ind = c(ind, #2*7=14
+              sample(west_M[west_M$Population == p, "SampleID"], size=2, replace = F), 
+              sample(west_F[west_F$Population == p, "SampleID"], size=2, replace = F))}}
+  
+  if(r=="m0f1"){
+    for(p in pop7){ #4*7=28
+      ind = c(ind, sample(west_F[west_F$Population == p, "SampleID"], size=4, replace = F))}}
+  if(r=="m1f0"){
+    for(p in pop7){
+      ind = c(ind, sample(west_M[west_M$Population == p, "SampleID"], size=4, replace = F))}}
+  
+  if(r=="m1f10"){
+    ind = c(ind, sample(west_M$SampleID, size=3, replace = F), 
+            sample(west_F$SampleID, size=25, replace = F))}
+  if(r=="m10f1"){
+    ind = c(ind, sample(west_M$SampleID, size=25, replace = F), 
+            sample(west_F$SampleID, size=3, replace = F))}
+  
+  if(r=="m1f3"){
+    for(p in pop7){
+      ind = c(ind, 
+              sample(west_M[west_M$Population == p, "SampleID"], size=1, replace = F), 
+              sample(west_F[west_F$Population == p, "SampleID"], size=3, replace = F))}}
+  if(r=="m3f1"){
+    for(p in pop7){
+      ind = c(ind, 
+              sample(west_M[west_M$Population == p, "SampleID"], size=3, replace = F), 
+              sample(west_F[west_F$Population == p, "SampleID"], size=1, replace = F))}}
+  
+  if(r=="m1f2"){
+    ind = c(ind, sample(west_M$SampleID, size=9, replace = F), 
+            sample(west_F$SampleID, size=19, replace = F))}
+  if(r=="m2f1"){
+    ind = c(ind, sample(west_M$SampleID, size=19, replace = F), 
+            sample(west_F$SampleID, size=9, replace = F))}
+  
+  data = westpop7[westpop7$SampleID %in% ind, ]
+  system(paste0("mkdir ./westpop7_", r))
+  setwd(paste0("./westpop7_", r))
+  write.table(data$SampleID, paste0("westpop7_", r, ".list"), 
+              row.names = F, col.names = F, quote = F)
+  write.csv(data, paste0("westpop7_", r, ".csv"), row.names = F)
+  setwd("../")
+}
+rm(west, west_F, west_M, westpop7)
+
+eastpop24 = east[east$Population %in% pop24,]
+data_M = eastpop24[eastpop24$sex == "Male", ]
+data_F = eastpop24[eastpop24$sex == "Female", ]
+for (r in ratios){
+  ind=NULL
+  if(r=="m1f1"){
+    for(p in pop24){
+      ind = c(ind, 
+              sample(data_M[data_M$Population == p, "SampleID"], size=2, replace = F), 
+              sample(data_F[data_F$Population == p, "SampleID"], size=2, replace = F))}}
+  
+  if(r=="m0f1"){
+    for(p in pop24){
+      ind = c(ind, sample(data_F[data_F$Population == p, "SampleID"], size=4, replace = F))}}
+  if(r=="m1f0"){
+    for(p in pop24){
+      ind = c(ind, sample(data_M[data_M$Population == p, "SampleID"], size=4, replace = F))}}
+  
+  if(r=="m1f10"){
+    ind = c(ind, sample(data_M$SampleID, size=9, replace = F), 
+            sample(data_F$SampleID, size=87, replace = F))}
+  if(r=="m10f1"){
+    ind = c(ind, sample(data_M$SampleID, size=87, replace = F), 
+            sample(data_F$SampleID, size=9, replace = F))}
+  
+  if(r=="m1f3"){
+    for(p in pop24){
+      ind = c(ind, 
+              sample(data_M[data_M$Population == p, "SampleID"], size=1, replace = F), 
+              sample(data_F[data_F$Population == p, "SampleID"], size=3, replace = F))}}
+  if(r=="m3f1"){
+    for(p in pop24){
+      ind = c(ind, 
+              sample(data_M[data_M$Population == p, "SampleID"], size=3, replace = F), 
+              sample(data_F[data_F$Population == p, "SampleID"], size=1, replace = F))}}
+  
+  if(r=="m1f2"){
+    ind = c(ind, sample(data_M$SampleID, size=32, replace = F), 
+            sample(data_F$SampleID, size=64, replace = F))}
+  if(r=="m2f1"){
+    ind = c(ind, sample(data_M$SampleID, size=64, replace = F), 
+            sample(data_F$SampleID, size=32, replace = F))}
+  
+  data = eastpop24[eastpop24$SampleID %in% ind, ]
+  system(paste0("mkdir ./eastpop24_", r))
+  setwd(paste0("./eastpop24_", r))
+  write.table(data$SampleID, paste0("eastpop24_", r, ".list"), 
+              row.names = F, col.names = F, quote = F)
+  write.csv(data, paste0("eastpop24_", r, ".csv"), row.names = F)
+  setwd("../")
+}
+
+# double-check
+files = read.table("sex_ratio_tests", header = F)
+for (i in files$V1){
+  data = read.csv(paste0(i, "/", i, ".csv"))
+  print(i)
+  print(table(data$sex))
+}
