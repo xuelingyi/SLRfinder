@@ -77,12 +77,11 @@ for (i in 1:nrow(LG)){
 }
 
 ####### step 2 process LD clusters #######
-#setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
-#data_cls = readRDS("data_cls.rds")
-
-print("step 2.1 process LD clusters")
+print("step 2 process LD clusters")
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
+
+data_cls = readRDS("data_cls.rds")
 
 files <- paste0("./file012/", list.files("file012"))
 indv_files <- files[grep(".indv",files)]
@@ -116,6 +115,11 @@ if(all(indv$V1 == pop_info$SampleID)) {
   print("indv and pop do not match!")}
 
 save(data_cls, GT, map, ind, pop, file="GT.RData")
+
+data_all = get_data_output(data_cls, GT, map, pop, sex_info, heterog_homog = c(0.5, 0.5), cores=ncores)
+saveRDS(data_all, "data_all.rds")
+## if expecting skewed sex ratios, the expected probability of sampling the heterogametic sex and the homogametic sex can be specified using the heterog_homog parameter. This will impact the chi-square tests of goodness of fit.
+
 
 ####### step 3 identify SLR candidates #######
 #setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
