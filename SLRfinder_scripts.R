@@ -122,12 +122,10 @@ saveRDS(data_all, "data_all.rds")
 
 
 ####### step 3 identify SLR candidates #######
-#setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
-#data_cls = readRDS("data_cls.rds")
-
 print("step 3 identify SLR candidates")
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
+data_all = readRDS("data_all.rds")
 
 ## print sex-related regions if know sex_info
 if(sex_info){
