@@ -203,8 +203,7 @@ print("step 3 identify SLR candidates")
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
 
-data_all = readRDS("data_all.rds")
-
+load("GT.RData")
 ## print sex-related regions if know sex_info
 if(sex_info){
   print("filter LD clusters by sex (10% misgrouped)")
