@@ -144,8 +144,12 @@ for (i in 1:nrow(LG)){
 This script will get the 012 genotypes of all LD clusters and generate two files in the dataset/parameter folder: a genotype file (**GT.RData**) and a file of the processed data including estimated criteria parameters (**data_all.rds**). 
 ```
 ####### step 2 process LD clusters #######
-## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
+## if starting R from new: read data information again (see scripts above) 
+## run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
+
+data_cls = readRDS("data_cls.rds")
+
 files <- paste0("./file012/", list.files("file012"))
 indv_files <- files[grep(".indv",files)]
 pos_files <- files[grep(".pos",files)]
@@ -195,9 +199,11 @@ The script will write out data of the candidate regions (**cand_regions.rds**, *
 
 ```
 ####### step 3. identify SLR candidates #######
-print("step 2.2 identify SLR candidates")
+print("step 3 identify SLR candidates")
 ## if starting R from new: the data information needs to be read in again; run the script below within the dataset folder. 
 # setwd(paste0("LD", min_LD*10, "cl", min.cl.size))
+
+data_all = readRDS("data_all.rds")
 
 ## print sex-related regions if know sex_info
 if(sex_info){
@@ -236,16 +242,15 @@ if(sex_info){
   print("Sex info unknown. Identify candidates by ranks only.")
 }
 
-
 ## identify candidate LD clusters based on ranks (choose among: nSNPs_rank, R2_rank, chi2_rank, Dext_var_rank, Dext_max_rank, Dext_mean_rank).
 # this step can be rerun using different rank combinations
-#data_all = readRDS("data_all.rds")
+# data_all = readRDS("data_all.rds")
 print(paste0("identify LD clusters by ranks: ", paste0(myranks, collapse = ", ")))
 cand_regions <- get_candidate_regions(data_all, ranks=myranks, nPerm=10000, cores=ncores, alpha=0.05)
 saveRDS(cand_regions, "cand_regions.rds")
 
 ## plot results: the QQ-plot and all significant candidates or the five top-ranked LD clusters will be plotted in one PDF file
-#cand_regions = readRDS("cand_regions.rds")
+# cand_regions = readRDS("cand_regions.rds")
 list2env(cand_regions, globalenv())
 alpha=0.05
 lambda <- lm(obs~exp+0, cand_regions$qq_data)$coefficients
