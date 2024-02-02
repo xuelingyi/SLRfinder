@@ -176,7 +176,6 @@ alpha=0.05
 lambda <- lm(obs~exp+0, cand_regions$qq_data)$coefficients
 qq_data$col=rep("grey40", nrow(data_out))
 qq_data$col[which(data_out$p_gc_adj<alpha)] <- "#ff9727"
-PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="SampleID", sort=F)
 
 ## the script below will print all results (the QQ-plot and all significant candidates or the five
 ## top-ranked LD clusters) into one PDF file, with one plot per page
