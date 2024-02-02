@@ -255,7 +255,6 @@ alpha=0.05
 lambda <- lm(obs~exp+0, cand_regions$qq_data)$coefficients
 qq_data$col=rep("grey40", nrow(data_out))
 qq_data$col[which(data_out$p_gc_adj<alpha)] <- "#ff9727"
-PCA_het_data = merge(PCA_het_data, sif, by.x="Ind", by.y="SampleID", sort=F)
 
 pdf(paste0(mydata, "_LD", min_LD, "cl", min.cl.size, ".pdf"), width = 6, height = 4)
 print(ggplot(qq_data, aes(x=exp, y=obs)) +
