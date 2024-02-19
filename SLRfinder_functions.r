@@ -111,10 +111,9 @@ get_data_output = function(data_cls, GT, map, pop, sex_info=T, heterog_homog = c
     cl_info[,Sex_g:=1]
     if(sex_info){
       data = merge(data, sif[, c("SampleID", "sex")], by.x="Ind", by.y="SampleID", sort=F)
-      data_sub = data[data$sex %in% c("female", "Female", "F", "male", "Male", "M"), ]
       cl_info[,Sex_g:=(
-        (min(sum(data_sub[which(d_c1 < d_c2), "sex"][[1]] %in% c("female", "Female", "F")), sum(data_sub[which(d_c1 < d_c2), "sex"][[1]] %in% c("male", "Male", "M"))) + 
-          min(sum(data_sub[which(d_c1 >= d_c2), "sex"][[1]] %in% c("female", "Female", "F")), sum(data_sub[which(d_c1 >= d_c2), "sex"][[1]] %in% c("male", "Male", "M"))))/nrow(data_sub)
+        (min(sum(data[which(d_c1 < d_c2), "sex"][[1]] %in% c("female", "Female", "F")), sum(data[which(d_c1 < d_c2), "sex"][[1]] %in% c("male", "Male", "M"))) + 
+          min(sum(data[which(d_c1 >= d_c2), "sex"][[1]] %in% c("female", "Female", "F")), sum(data[which(d_c1 >= d_c2), "sex"][[1]] %in% c("male", "Male", "M"))))/nrow(data[data$sex %in% c("female", "Female", "F", "male", "Male", "M"),])
         )]}
     
     return(as.data.frame(cl_info[, .(chr, nSNPs, mean_LD, nE, c, R2, PVE, PVE2, Dext_mean, Dext_max, Dext_var, Sex_g, chi2, SNPs, data=list(data))]))
