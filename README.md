@@ -11,6 +11,8 @@ Create a directory for each dataset using the dataset name (e.g., mydata). This 
 3. **SLRfinder_functions.r**: the R script for running SLRfinder, available on Github
 4. **./a15m75**: a folder containing the filtered vcf files (can be generated using the script below)
 5. **./GenoLD.snp100**: a folder containing the LD edge lists estimated using the filtered vcf files (can be generated using the script below)
+
+The file datasets_sif.zip includes sample and reference information used in our study and can be used as example inputs.  
 <br>
 
 **prepare the input vcf datasets and the LD edge lists**
