@@ -12,7 +12,7 @@ Create a directory for each dataset using the dataset name (e.g., mydata). This 
 4. **./a15m75**: a folder containing the filtered vcf files (can be generated using the script below)
 5. **./GenoLD.snp100**: a folder containing the LD edge lists estimated using the filtered vcf files (can be generated using the script below)
 
-The file datasets.zip includes the input sample information, reference list, and the out data cand_regions.rds.
+The file datasets_sif.zip includes sample information and reference lists of the datasets used in our paper, which can be example inputs. 
 <br>
 
 **prepare the input vcf datasets and the LD edge lists**
