@@ -283,7 +283,7 @@ for(r in unique(PCA_het_data$region)) {
     print (ggplot(pca, aes(PC_scaled,Het)) + geom_smooth(method = "lm",se=FALSE, col="black") + geom_point(aes(x=PC_scaled, y=Het, color=Pop), alpha=0.6, size=2.5) + theme_bw() + labs(x="PC1 (scaled)", y="Proportion heterozygous loci", title=title) + theme(title = element_text(size=10)))
   }
 
-### extract identified sex ID and plot by SLRfinder identified sex
+### extract identified genetic sex
 #pca$SLRfinder_sex = "unknown"
 #pca[pca$PC_scaled < 0.5, "SLRfinder_sex"] = "homogametic"
 #pca[pca$PC_scaled > 0.5, "SLRfinder_sex"] = "heterogametic"
