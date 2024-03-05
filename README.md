@@ -191,7 +191,7 @@ If sex information is known, the LD clusters will be filtered and only clusters 
 Candidate LD clusters will also be identified based on rankings of the default four criteria parameters:
 
 1. nSNPs: the number of SNPs in this cluster. The true SLR cluster should have more SNPs. 
-2. R2: the correlation coefficient between heterozygosity and PC1 scores. The true SLR cluster should have a higher R2. 
+2. R2: the adjusted R-squared values of the fitted regression of heterozygosity to PC1 scores. The true SLR cluster should have a higher R2. 
 3. chi2: the chi-square value in the goodness of fit test on the even split of individuals into two clusters in each population. The true SLR cluster should have an even split of individuals into the two clusters representing males and females, thus a smaller chi2 (not different from the null expectation).
 4. Dext_var: on the heterozygosity~PC1 plot, the Euclidean distance between each dot and its closer corner (bottom-left or top-right) divided by half of the distance between the corners. The true SLR cluster should have a small variance of this distance (i.e., dense clustering). 
 
