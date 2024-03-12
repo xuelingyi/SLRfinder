@@ -5,13 +5,16 @@ min_LD = as.numeric(readline(prompt="min_LD (0.85): "))
 min.cl.size = as.numeric(readline(prompt="min.cl.size (20): "))
 ncores = as.numeric(readline(prompt="cores to use: "))
 
+
 #mydata = "mydata"
 #min_LD=0.85
 #min.cl.size=20
 #ncores=1
 
 myranks=c("Dext_var_rank", "R2_rank", "nSNPs_rank", "chi2_rank")
+print(myranks)
 sex_info=F
+print(paste0("sex_info: ", sex_info))
 
 ########### read data information ###########
 print("read data information")
