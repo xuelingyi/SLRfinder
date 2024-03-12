@@ -159,12 +159,18 @@ GT_files <- files[!grepl(".log",files) & !grepl(".indv",files) & !grepl(".pos",f
 
 map <- rbindlist(lapply(1:length(pos_files),function(i){
   pos <- fread(pos_files[i])
-  colnames(pos) <- c("Chr","Pos")
-  pos$SNP <- paste0(pos$Chr, "_", pos$Pos)
+  if(ncol(pos) > 1 ) {
+    colnames(pos) <- c("Chr","Pos")
+    pos$SNP <- paste0(pos$Chr, "_", pos$Pos)}
+  if(ncol(pos) ==0 ) {pos = NULL}
   return(pos)
 }))
 
-GT <- do.call(cbind, lapply(1:length(pos_files),function(i){ as.matrix(fread(GT_files[i])[,-1]) }))
+GT <- do.call(cbind, lapply(1:length(pos_files),function(i){
+  gt.matrix = as.matrix(fread(GT_files[i])[,-1]) 
+  if (nrow(gt.matrix) == 0){return(NULL)}
+  if (nrow(gt.matrix) > 0){return(gt.matrix)}
+}))
 #recode missing data
 GT[GT==-1] <- NA
 
