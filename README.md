@@ -159,7 +159,7 @@ pos_files <- files[grep(".pos",files)]
 GT_files <- files[!grepl(".log",files) & !grepl(".indv",files) & !grepl(".pos",files)]
 
 map <- rbindlist(lapply(1:length(pos_files),function(i){
-  pos <- fread(pos_files[i])
+  pos <- fread(pos_files[i], sep="\t")
   if(ncol(pos) > 1 ) {
     colnames(pos) <- c("Chr","Pos")
     pos$SNP <- paste0(pos$Chr, "_", pos$Pos)}
