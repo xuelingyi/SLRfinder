@@ -50,7 +50,7 @@ SLRfinder can be readily applied to the prepared data by saving the R script **S
 ## change the working directory to the dataset folder
 ## This script has a readline prompt asking for the inputs (dataset name, min_LD, min.cl.size, ncores).
 ## If you don't like the prompt, you can modify the first few lines to specify your inputs.
-## NB! This script requires that vcftools is installed and can be directly called in your R environment
+## NB! This script requires that vcftools is installed and can be directly called in your R environment using system
 source("SLRfinder_scripts.R")
 ```
 
