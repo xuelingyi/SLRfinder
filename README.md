@@ -27,10 +27,10 @@ chr=$(sed -n ${SLURM_ARRAY_TASK_ID}p reference.list | awk '{print $1}')
 lg=$(sed -n ${SLURM_ARRAY_TASK_ID}p reference.list | awk '{print $2}')
 ind=mydata
 
-## SNP filtering 
-vcftools --gzvcf ${ind}.vcf.gz \
---chr ${chr} --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 \
---recode --recode-INFO-all --out a15m75/${ind}_${lg}_a15m75
+## SNP filtering (e.g., input data can be the outputs from GATK GenotypeGVCFs)
+bcftools view -m2 -M2 -v snps --min-ac=1 ../vcf/${ind}_${lg}.vcf.gz \
+| vcftools --vcf - --minGQ 20 --minQ 30 --maf 0.15 --max-missing 0.75 --recode --recode-INFO-all --out a15m75/${ind}_${lg}_a15m75
+
 
 ## LD edge list
 vcftools --vcf ./a15m75/${ind}_${lg}_a15m75.recode.vcf \
