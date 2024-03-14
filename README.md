@@ -77,7 +77,7 @@ sif = read.csv(paste0(mydata, ".csv"))
 LG = read.table("reference.list", header = F)
 names(LG) = c("chr", "lg")
 
-sex_info=T
+sex_info=F
 myranks=c("Dext_var_rank", "R2_rank","nSNPs_rank", "chi2_rank")
 
 # default parameters for whole-genome sequencing data
