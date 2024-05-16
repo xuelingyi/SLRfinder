@@ -189,9 +189,9 @@ get_candidate_regions <- function(data_out, ranks=c("Dext_var_rank", "R2_rank","
   candidates = merge(candidates, LG, by="chr")
   
   write.csv(candidates[, c("chr", "lg", "region", "Sex_g", "rank", "p_gc_adj",
-                           "nSNPs", "Dext_mean", "R2", "chi2", 
-                           "nSNPs_rank", "Dext_mean_rank", "R2_rank", "chi2_rank", 
-                           "Dext_max_rank", "mean_LD", "Dext_max")], 
+                           "nSNPs", "R2", "chi2", "Dext_var", "Dext_mean", "Dext_max", 
+                           "nSNPs_rank", "R2_rank", "chi2_rank", "Dext_var_rank", "Dext_mean_rank", "Dext_max_rank",
+                           "mean_LD")], 
             "candidates.csv", row.names = F)
   
   return(list(data_out=data_out, candidates=candidates, qq_data=qq_data, PCA_het_data=PCA_het_data, lambda=lambda))
