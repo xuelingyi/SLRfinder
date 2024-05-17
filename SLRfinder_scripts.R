@@ -14,6 +14,7 @@ ncores = as.numeric(readline(prompt="cores to use: "))
 myranks=c("Dext_var_rank", "R2_rank", "nSNPs_rank", "chi2_rank")
 print(myranks)
 sex_info=F
+sex_filter = 0.1
 print(paste0("sex_info: ", sex_info))
 
 ########### read data information ###########
@@ -132,8 +133,7 @@ data_all = readRDS("data_all.rds")
 
 ## print sex-related regions if know sex_info
 if(sex_info){
-  print("filter LD clusters by sex (10% misgrouped)")
-  sex_filter = 0.1
+  print(paste0("filter LD clusters by sex (", sex_filter*100, "% misgrouped)"))
   data_sex = data_all[data_all$Sex_g <= sex_filter,]
   myindex = length(grep("_", data_sex[1, "chr"])) + 2
   
