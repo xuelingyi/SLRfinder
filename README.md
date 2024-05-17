@@ -48,9 +48,11 @@ vcftools --vcf populations.snps.vcf --geno-r2 --ld-window 100 --out mydata_a15m7
 SLRfinder can be readily applied to the prepared data by saving the R script **SLRfinder_scripts.R** in the dataset folder and run the R code below:
 ```
 ## change the working directory to the dataset folder
-## This script has a readline prompt asking for the inputs (dataset name, min_LD, min.cl.size, ncores).
+## This script has a readline prompt asking for the inputs (dataset name, min_LD, min.cl.size, sex_info, sex_filter, ranks, ncores).
 ## If you don't like the prompt, you can modify the first few lines to specify your inputs.
 ## NB! This script requires that vcftools is installed and can be directly called in your R environment using system
+## NB! VCF files in the ./a15m75/ folder are named as mydata_LGx_a15m75.recode.vcf. Mdify this (line 81) if your files are named differently.
+
 source("SLRfinder_scripts.R")
 ```
 
