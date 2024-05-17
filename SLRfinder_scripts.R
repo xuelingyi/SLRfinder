@@ -3,11 +3,12 @@
 mydata = readline(prompt="The dataset name: ")
 min_LD = as.numeric(readline(prompt="min_LD (default 0.85): "))
 min.cl.size = as.numeric(readline(prompt="min.cl.size (default 20): "))
-myranks = readline(prompt="use ranks (choose from "Dext_var_rank", "R2_rank", "nSNPs_rank", "chi2_rank", "Dext_max_rank", "Dext_mean_rank", default the first 4): ")
+myranks = readline(prompt="use ranks (choose from \nDext_var_rank, R2_rank, nSNPs_rank, chi2_rank, Dext_max_rank, Dext_mean_rank, \ndefault the first 4, comma separated): ")
 sex_info = readline(prompt="Sex available? (default F)")
 sex_filter = as.numeric(readline(prompt="filtering threshold of misplaced sexes (default 0.1): "))
 ncores = as.numeric(readline(prompt="cores to use (default 1): "))
 
+myranks = unlist(strsplit(myranks, split = ","))
 
 #mydata = "mydata"
 #min_LD=0.85
