@@ -51,7 +51,7 @@ SLRfinder can be readily applied to the prepared data by saving the R script **S
 ## This script has a readline prompt asking for the inputs (dataset name, min_LD, min.cl.size, sex_info, sex_filter, ranks, ncores).
 ## If you don't like the prompt, you can modify the first few lines to specify your inputs.
 ## NB! This script requires that vcftools is installed and can be directly called in your R environment using system
-## NB! VCF files in the ./a15m75/ folder are named as mydata_LGx_a15m75.recode.vcf. Mdify this (line 81) if your files are named differently.
+## NB! VCF files in the ./a15m75/ folder are named as mydata_LGx_a15m75.recode.vcf. Modify this (line 81) if your files are named differently (e.g., without recode). If your vcf files are compressed (.vcf.gz), you need to use the command vcftools --gzvcf (not --vcf). 
 
 source("SLRfinder_scripts.R")
 ```
