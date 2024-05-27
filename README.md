@@ -58,7 +58,7 @@ source("SLRfinder_scripts.R")
 
 <br>
 
-<img width="840" alt="Screenshot 2024-01-16 at 1 21 03 PM" src="https://github.com/xuelingyi/SLRfinder/assets/76267685/83c45375-0c4a-44cc-aace-7acf16563ddc">
+![Figure1_SLRfinder](https://github.com/xuelingyi/SLRfinder/assets/76267685/45027e21-f864-42b8-8e77-c5f546ae626a)
 
 <br>
 
