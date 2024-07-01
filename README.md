@@ -4,10 +4,13 @@ This method is aimed at identifying candidate sex-linked regions (SLRs) based on
 
 Required R packages: igraph, data.table, SNPRelate, ggplot2, ggpubr, cowplot, parallel
 
-##to install SNPrelate:
-#if (!require("BiocManager", quietly = TRUE))
-#install.packages("BiocManager")
-#BiocManager::install("SNPRelate")
+## to install SNPrelate:
+
+# if (!require("BiocManager", quietly = TRUE))
+
+# install.packages("BiocManager")
+
+# BiocManager::install("SNPRelate")
 
 
 ## Prepare the input files
